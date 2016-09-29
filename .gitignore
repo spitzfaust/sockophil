@@ -27,3 +27,7 @@
 *.exe
 *.out
 *.app
+.idea/*.iws
+.idea/tasks.xml
+.idea/workspace.xml
+/bin/
