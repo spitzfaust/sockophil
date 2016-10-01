@@ -30,4 +30,4 @@
 .idea/*.iws
 .idea/tasks.xml
 .idea/workspace.xml
-/bin/
+bin/
