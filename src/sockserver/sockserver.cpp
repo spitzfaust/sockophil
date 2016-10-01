@@ -7,13 +7,6 @@
 #include <stdlib.h>
 #include "rlutil/rlutil.h"
 #include "docopt.h"
-
-<<<<<<< HEAD
-int main() {
-  rlutil::setBackgroundColor(rlutil::MAGENTA);
-  rlutil::setColor(rlutil::BLUE);
-  std::cout << "Hello World";
-=======
 #include "sockophil/constants.h"
 
 static const char USAGE[] =
@@ -65,5 +58,4 @@ int main(int argc, const char** argv)
     }
 
     return 0;
->>>>>>> 1e11d3ebf8c091d76b65764a30871b4174b292d1
 }
