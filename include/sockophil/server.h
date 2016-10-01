@@ -15,6 +15,7 @@ public:
   Server(int port, std::string targetDir);
   ~Server();
 
+
 };
 
 #endif //SOCKOPHIL_SERVER_H

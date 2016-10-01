@@ -4,6 +4,13 @@
 
 #include "../include/sockophil/server.h"
 
-Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDir) {
+Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDir)
+{
+
+}
+
+
+Server::~Server()
+{
 
 }
