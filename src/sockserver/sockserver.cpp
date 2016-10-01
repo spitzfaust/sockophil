@@ -32,7 +32,7 @@ int main(int argc, const char** argv)
             = docopt::docopt(USAGE,
                              { argv + 1, argv + argc },
                              true,               // show help if requested
-                             "socketserver 0.1");  // version string
+                             "sockserver 0.1");  // version string
 
     for(auto const& arg : args) {
         std::cout << arg.first << "  " <<  arg.second << std::endl;
