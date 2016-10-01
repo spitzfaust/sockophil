@@ -54,7 +54,7 @@ Server::Server(int port, std::string target_dir) : port(port), target_dir(target
   listen_socket = accept(server_socket, (struct sockaddr *) &client_addr, &clilen);
   if (listen_socket < 0) {/* write error*/};
   /* Variable vor receiving the message. Variable type yet to be determined */
-  std::string message;
+  int message;
   /* Reading the message with read() */
   message = read(server_socket,buffer,255);
 
