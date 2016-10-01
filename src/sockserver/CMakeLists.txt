@@ -1,5 +1,5 @@
 project(sockserver)
 set(SOURCE_FILES
-        sockserver.cpp)
+        server.cpp sockserver.cpp)
 
 add_executable(sockserver ${SOURCE_FILES})

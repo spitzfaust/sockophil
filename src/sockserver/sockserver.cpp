@@ -6,7 +6,7 @@
 #include "rlutil/rlutil.h"
 
 int main() {
-    rlutil::setBackgroundColor(rlutil::GREEN);
-    rlutil::setColor(rlutil::BLUE);
-    std::cout << "Hello World";
+  rlutil::setBackgroundColor(rlutil::MAGENTA);
+  rlutil::setColor(rlutil::BLUE);
+  std::cout << "Hello World";
 }
