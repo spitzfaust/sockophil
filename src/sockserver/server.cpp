@@ -58,7 +58,10 @@ Server::Server(int port, std::string target_dir) : port(port), target_dir(target
   /* Reading the message with read() */
   message = read(server_socket,buffer,255);
 
-  if (message < 0) {/* write error*/};
+  if (message < 0) {
+    /* write error*/
+    perror("Error reading from socket");
+  };
 
   printf("Here is the message: %s\n",buffer);
 
