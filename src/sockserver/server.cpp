@@ -12,12 +12,12 @@ Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDi
   /* variable holding our socket*/
   int server_socket;
   /* length of the clients address */
-  int clilen;
-  /* Socket we will be creating wenn we accept a client request*/
+  socklen_t clilen;
+  /* Socket we will be creating when we accept a client request*/
   int listen_socket;
   /* Buffer size for our messages */
-  int buffer;
-  /* Structs holding both server and client adress */
+  char buffer[256];
+  /* Structs holding both server and client address */
   struct sockaddr_in server_addr, client_addr;
   /* telling the server address all values will be IP adresses*/
   server_addr.sin_family = AF_INET;
@@ -29,7 +29,7 @@ Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDi
   server_addr.sin_port = htons(port);
 
   /*creating the socket with socket()
-   * AF_INET means all values will be IP adresses
+   * AF_INET means all values will be IP addresses
    * SOCK_STREAM means it will be TCP
    */
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -47,7 +47,7 @@ Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDi
    */
   listen(server_socket,1);
 
-  /* Length of client adress clilen is set */
+  /* Length of client address clilen is set */
   clilen = sizeof(client_addr);
 
   /* we start listening */
@@ -69,10 +69,7 @@ Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDi
 
   /* Close both sockets */
   close(listen_socket);
-  close(server_socket)
-}
-
-
+  close(server_socket);
 }
 
 
