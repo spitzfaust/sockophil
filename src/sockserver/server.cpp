@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDir) {
+Server::Server(int port, std::string target_dir) : port(port), target_dir(target_dir) {
   /* variable holding our socket*/
   int server_socket;
   /* length of the clients address */
@@ -19,7 +19,7 @@ Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDi
   char buffer[256];
   /* Structs holding both server and client address */
   struct sockaddr_in server_addr, client_addr;
-  /* telling the server address all values will be IP adresses*/
+  /* telling the server address all values will be IP addresses*/
   server_addr.sin_family = AF_INET;
   /* no idea yet*/
   server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -54,7 +54,7 @@ Server::Server(int port, std::string targetDir) : port(port), targetDir(targetDi
   listen_socket = accept(server_socket, (struct sockaddr *) &client_addr, &clilen);
   if (listen_socket < 0) {/* write error*/};
   /* Variable vor receiving the message. Variable type yet to be determined */
-  int message;
+  std::string message;
   /* Reading the message with read() */
   message = read(server_socket,buffer,255);
 

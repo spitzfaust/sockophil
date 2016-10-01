@@ -10,9 +10,9 @@
 class Server{
 private:
   int port;
-  std::string targetDir;
+  std::string target_dir;
 public:
-  Server(int port, std::string targetDir);
+  Server(int port, std::string target_dir);
   ~Server();
 };
 
