@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
 <<<<<<< HEAD
+<<<<<<< HEAD
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/server.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/sockophil/server.h" isTestSource="false" />
@@ -13,6 +14,26 @@
       <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/sockclient.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CMakeLists.txt" isTestSource="false" />
+=======
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/sockserver.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/socket_connection_exception.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/menu.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/sockclient.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/current_directory_exception.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/client_selection.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/client.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/socket_creation_exception.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_private.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_value.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_util.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/CMakeLists.txt" isTestSource="false" />
+>>>>>>> feature/client_setup
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/src/gtest_main.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/src/gtest-all.cc" isTestSource="false" />
@@ -22,13 +43,19 @@
       <sourceFolder url="file://$MODULE_DIR$/test/server_tests/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/server_tests/basic_check.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/client_tests/CMakeLists.txt" isTestSource="false" />
+<<<<<<< HEAD
       <sourceFolder url="file://$MODULE_DIR$/test/client_tests/basic_check.cpp" isTestSource="false" />
 >>>>>>> devel
+=======
+      <sourceFolder url="file://$MODULE_DIR$/test/client_tests/menu_test.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/client_tests/basic_check.cpp" isTestSource="false" />
+>>>>>>> feature/client_setup
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
       <library name="Header Search Paths">
         <CLASSES>
+<<<<<<< HEAD
 <<<<<<< HEAD
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
           <root url="file:///usr/include" />
@@ -38,6 +65,8 @@
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
           <root url="file:///usr/include" />
 =======
+=======
+>>>>>>> feature/client_setup
           <root url="file:///usr/include" />
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
           <root url="file:///usr/local/include" />
@@ -45,7 +74,10 @@
         <SOURCES>
           <root url="file:///usr/include" />
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
+<<<<<<< HEAD
 >>>>>>> devel
+=======
+>>>>>>> feature/client_setup
           <root url="file:///usr/local/include" />
         </SOURCES>
       </library>
