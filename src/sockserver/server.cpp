@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <iostream>
+#include <stdlib.h>
 
 Server::Server(int port, std::string target_dir) : port(port), target_dir(target_dir) {
   /* variable holding our socket*/
@@ -38,6 +40,7 @@ Server::Server(int port, std::string target_dir) : port(port), target_dir(target
     /* if is -1 give error
      * else start listening
      */
+    serverError("ERROR connecting to client");
   }
 
   /* if we did not encounter an error we will start listening */
@@ -60,7 +63,7 @@ Server::Server(int port, std::string target_dir) : port(port), target_dir(target
 
   if (message < 0) {
     /* write error*/
-    perror("Error reading from socket");
+    serverError("Error reading from socket");
   };
 
   printf("Here is the message: %s\n",buffer);
@@ -68,7 +71,10 @@ Server::Server(int port, std::string target_dir) : port(port), target_dir(target
   /* Write back a message to the sending client */
   message = write(server_socket,"I got your message",18);
 
-  if (message < 0) {/* write error*/};
+  if (message < 0) {
+    /* write error*/
+    serverError("ERROR writing back to client");
+  };
 
   /* Close both sockets */
   close(listen_socket);
@@ -78,4 +84,9 @@ Server::Server(int port, std::string target_dir) : port(port), target_dir(target
 
 Server::~Server() {
 
+}
+
+void Server::serverError(std::string error){
+  std::cout << error << std::endl;
+  std::terminate();
 }

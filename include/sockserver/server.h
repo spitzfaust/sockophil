@@ -11,6 +11,7 @@ class Server{
 private:
   int port;
   std::string target_dir;
+  void serverError(std::string error);
 public:
   Server(int port, std::string target_dir);
   ~Server();
