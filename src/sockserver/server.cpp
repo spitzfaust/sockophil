@@ -7,86 +7,99 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <iostream>
 #include <stdlib.h>
+#include <errno.h>
+#include <memory>
+#include <cstring>
+#include <iostream>
+namespace sockclient {
 
-Server::Server(int port, std::string target_dir) : port(port), target_dir(target_dir) {
-  /* variable holding our socket*/
-  int server_socket;
-  /* length of the clients address */
-  socklen_t clilen;
-  /* Socket we will be creating when we accept a client request*/
-  int listen_socket;
-  /* Buffer size for our messages */
-  char buffer[256];
-  /* Structs holding both server and client address */
-  struct sockaddr_in server_addr, client_addr;
-  /* telling the server address all values will be IP addresses*/
-  server_addr.sin_family = AF_INET;
-  /* no idea yet*/
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-  /* telling the server address the port number given to our object and
-   * putting it through htons (host to network short) just in case
-   */
-  server_addr.sin_port = htons(port);
+  Server::Server(unsigned short port, std::string target_directory) : port(port), target_directory(target_directory) {
+    this->create_socket();
+    this->server_bind();
+    this->server_listen();
 
-  /*creating the socket with socket()
-   * AF_INET means all values will be IP addresses
-   * SOCK_STREAM means it will be TCP
-   */
-  server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
-  if (bind(server_socket, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0){
-    /* if is -1 give error
-     * else start listening
-     */
-    serverError("ERROR connecting to client");
+
+    /* Write back a message to the sending client */
+    int message = write(server_socket, "I got your message", 18);
+
+    if (message < 0) {
+      /* write error*/
+      server_error("ERROR writing back to client");
+    };
+    this->close_socket();
   }
 
-  /* if we did not encounter an error we will start listening */
-  /* we listen at our socket
-   * the integer is the number of clients we want to listen to at once
-   * now we only want one so 1
-   */
-  listen(server_socket,1);
+  void Server::create_socket() {
+    this->server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if(this->server_socket == -1) {
+      //throw error, in client: throw SocketCreationException(errno);
+    }
+    std::memset(&this->server_address,0,sizeof(this->server_address));
+    /* telling the server address all values will be IP addresses */
+    this->server_address.sin_family = AF_INET;
+    /* dont know yet */
+    this->server_address.sin_addr.s_addr = INADDR_ANY;
+    /* telling the server address the port number given to our object and
+     * putting it through htons (host to network short) just in case
+     */
+    this->server_address.sin_port = htons(this->port);
 
-  /* Length of client address clilen is set */
-  clilen = sizeof(client_addr);
+  }
 
-  /* we start listening */
-  listen_socket = accept(server_socket, (struct sockaddr *) &client_addr, &clilen);
-  if (listen_socket < 0) {/* write error*/};
-  /* Variable vor receiving the message. Variable type yet to be determined */
-  int message;
-  /* Reading the message with read() */
-  message = read(server_socket,buffer,255);
+  void Server::server_bind() {
+    if (bind(this->server_socket, (struct sockaddr *) &this->server_address, sizeof(server_address)) < 0) {
+      /* if is -1 give error
+       * else start listening
+       */
+      server_error("ERROR connecting to client");
+    }
+  }
 
-  if (message < 0) {
-    /* write error*/
-    serverError("Error reading from socket");
-  };
-
-  printf("Here is the message: %s\n",buffer);
-
-  /* Write back a message to the sending client */
-  message = write(server_socket,"I got your message",18);
-
-  if (message < 0) {
-    /* write error*/
-    serverError("ERROR writing back to client");
-  };
-
-  /* Close both sockets */
-  close(listen_socket);
-  close(server_socket);
-}
+  void Server::server_listen() {
+    /* we listen at our socket
+     * the integer is the number of clients we want to listen to at once
+     */
+    listen(this->server_socket, 5);
+    char buffer[1024];
+    int size;
+    socklen_t client_address_length = sizeof (struct sockaddr_in);
 
 
-Server::~Server() {
+    while(1) {
+      std::cout << "Waiting for clients..." << std::endl;
+      /* we start listening */
+      this->new_socket = accept(server_socket, (struct sockaddr *) &this->client_address, &client_address_length);
+      if (this->new_socket > 0) {
+          printf ("Client connected from %s:%d...\n", inet_ntoa (this->client_address.sin_addr),ntohs(this->client_address.sin_port));
+          strcpy(buffer,"Welcome to myserver, Please enter your command:\n");
+          send(new_socket, buffer, strlen(buffer),0);
+        }
+      do {
+        size = recv (new_socket, buffer, (1024-1), 0);
+        if( size > 0) {
+          buffer[size] = '\0';
+          std::cout << "Message received: " << buffer << std::endl;
+        } else if (size == 0) {
+          std::cout << "Client closed remote socket" << std::endl;
+          break;
+        } else {
+          server_error("recv error");
+          std::terminate();
+        }
+      } while (strncmp (buffer, "quit", 4)  != 0);
+      close(this->new_socket);
+      printf("Here is the message: %s\n", buffer);
+    }
+  }
 
-}
+  void Server::close_socket() {
+    close(this->server_socket);
+  }
 
-void Server::serverError(std::string error){
-  std::cout << error << std::endl;
-  std::terminate();
+  void Server::server_error(std::string error) {
+    std::cout << error << std::endl;
+    std::terminate();
+  }
 }

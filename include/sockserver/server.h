@@ -1,20 +1,39 @@
 //
 // Created by Pommi on 9/30/16.
 //
-
-#ifndef SOCKOPHIL_SERVER_H
-#define SOCKOPHIL_SERVER_H
+#pragma once
 
 #include <string>
+#include <memory>
+#include <netinet/in.h>
 
-class Server{
-private:
-  int port;
-  std::string target_dir;
-  void serverError(std::string error);
-public:
-  Server(int port, std::string target_dir);
-  ~Server();
-};
+namespace sockclient {
+  class Server {
+  private:
+    unsigned short port;
+    int server_socket;
+    int new_socket;
+    struct sockaddr_in server_address;
+    struct sockaddr_in client_address;
+    std::string target_directory;
+    //std::shared_ptr<Menu> menu;
 
-#endif //SOCKOPHIL_SERVER_H
+    void create_socket();
+
+    void server_bind();
+
+    void server_listen();
+
+    void close_socket();
+
+    void server_error(std::string error);
+
+  public:
+    Server(unsigned short port, std::string target_dir);
+
+    ~Server();
+
+    void run();
+  };
+
+}
