@@ -12,6 +12,9 @@
 #include <memory>
 #include <cstring>
 #include <iostream>
+#include "sockophil/constants.h"
+
+
 namespace sockclient {
 
   Server::Server(unsigned short port, std::string target_directory) : port(port), target_directory(target_directory) {
@@ -26,7 +29,6 @@ namespace sockclient {
 
     if (message < 0) {
       /* write error*/
-      server_error("ERROR writing back to client");
     };
     this->close_socket();
   }
@@ -62,7 +64,7 @@ namespace sockclient {
      * the integer is the number of clients we want to listen to at once
      */
     listen(this->server_socket, 5);
-    char buffer[1024];
+    char buffer[sockophil::BUFFER];
     int size;
     socklen_t client_address_length = sizeof (struct sockaddr_in);
 
@@ -77,7 +79,7 @@ namespace sockclient {
           send(new_socket, buffer, strlen(buffer),0);
         }
       do {
-        size = recv (new_socket, buffer, (1024-1), 0);
+        size = recv (new_socket, buffer, (sockophil::BUFFER-1), 0);
         if( size > 0) {
           buffer[size] = '\0';
           std::cout << "Message received: " << buffer << std::endl;
