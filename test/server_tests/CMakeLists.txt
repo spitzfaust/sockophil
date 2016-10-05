@@ -4,4 +4,4 @@ add_executable(runServerTests
             basic_check.cpp
         )
 
-target_link_libraries(runServerTests gtest gtest_main)
+target_link_libraries(runServerTests gtest gtest_main sockserver_lib)
