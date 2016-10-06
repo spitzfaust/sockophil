@@ -3,6 +3,7 @@
 //
 
 #include <string>
+#include "sockclient/NoFilenameException.h"
 #include "sockclient/ClientSelection.h"
 
 namespace sockclient {
@@ -10,10 +11,21 @@ namespace sockclient {
      * Constructor that sets the member vars
      * @param action is the action that should be executed
      * @param filename is either the filename of the file to download or upload or empty (quit, list)
+     * @todo check if action is list or quit when filename empty else throw exception
      */
     ClientSelection::ClientSelection(sockophil::client_action action, std::string filename) :
             action(action),
-            filename(filename) {}
+            filename(filename) {
+        if(filename.empty() && ((action == sockophil::put) || (action == sockophil::get))) {
+            throw NoFilenameException();
+        }
+
+    }
+    /**
+     * Consturctor that sets the member vars by calling the main constructor
+     * @param action is the action that should be executed
+     */
+    ClientSelection::ClientSelection(sockophil::client_action action) : ClientSelection(action, "") {}
 
     /**
      * Get the action

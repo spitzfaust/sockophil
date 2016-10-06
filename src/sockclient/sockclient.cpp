@@ -37,16 +37,20 @@ static const char USAGE[] =
 
 int main(int argc, const char** argv)
 {
+
     int port = 0;
     std::string ip_address = "";
+    std::string version = "sockclient 0.1";
     /* client pointer that is used later */
     std::shared_ptr<sockclient::Client> client;
+    /* set the title of the terminal window */
+    rlutil::setConsoleTitle(version);
     /* docopt parses the arguments from the USAGE and creates a map from them */
     std::map<std::string, docopt::value> args
             = docopt::docopt(USAGE,
                              { argv + 1, argv + argc },
                              true,               // show help if requested
-                             "sockclient 0.1");  // version string
+                             version);  // version string
     try {
         /* convert string to integer */
         port = std::stoi(args["--port"].asString());
@@ -92,6 +96,5 @@ int main(int argc, const char** argv)
     }
     /* run the client */
     client->run();
-
     return 0;
 }

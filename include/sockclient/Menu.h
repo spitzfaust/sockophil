@@ -29,22 +29,26 @@ namespace sockclient {
         /**
          * @var terminal_width Width of the terminal.
          */
-        unsigned int terminal_width;
+        int terminal_width;
         /**
          * @var terminal_height Height of the terminal
 
          */
-        unsigned int terminal_height;
-        void render_hr(const char filling, const int bg_color, const int color) const noexcept;
-        void render_centered_msg(const std::string& message, const char filling, const int bg_color, const int color) const noexcept;
+        int terminal_height;
+        void render_hr(const char filling, const int color) const noexcept;
+        void render_centered_msg(const std::string& message, const char filling, const int color) const noexcept;
         void render_welcome_msg() const noexcept;
-        void render_main_menu() const noexcept;
+        void render_action_prompt() const noexcept;
+        void render_filename_prompt() const noexcept;
         void update_terminal_dimensions() noexcept;
         std::string clear_eol() const noexcept;
+        sockophil::client_action action_prompt() const noexcept;
+        std::string filename_prompt() const noexcept;
+
     public:
         Menu(int port, std::string ip_address, std::string current_directory);
         ~Menu();
-        ClientSelection get_option();
+        ClientSelection selection_prompt();
         std::string get_connected_on() const noexcept;
         std::string get_current_directory() const noexcept;
     };

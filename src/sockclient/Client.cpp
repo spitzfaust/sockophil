@@ -60,7 +60,7 @@ namespace sockclient {
      * Calls the menu to prompt the user for input and reacts on it.
      */
     void Client::run() {
-        this->menu->get_option();
+        this->menu->selection_prompt();
     }
 
     /**

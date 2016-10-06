@@ -22,6 +22,7 @@ namespace sockclient {
         std::string filename;
     public:
         ClientSelection(sockophil::client_action action, std::string filename);
+        ClientSelection(sockophil::client_action action);
         std::string get_filename() const noexcept;
         sockophil::client_action get_action() const noexcept;
     };
