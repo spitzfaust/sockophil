@@ -11,7 +11,6 @@ namespace sockclient {
      * Constructor that sets the member vars
      * @param action is the action that should be executed
      * @param filename is either the filename of the file to download or upload or empty (quit, list)
-     * @todo check if action is list or quit when filename empty else throw exception
      */
     ClientSelection::ClientSelection(sockophil::client_action action, std::string filename) :
             action(action),
