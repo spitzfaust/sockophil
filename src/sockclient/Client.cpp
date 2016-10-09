@@ -8,11 +8,15 @@
 #include <memory>
 #include <cstring>
 #include <arpa/inet.h>
-#include <sockclient/SocketConnectionException.h>
-
+#include <sockophil/constants.h>
+#include <sockophil/DataPackage.h>
+#include <fstream>
+#include "nlohmann/json.hpp"
+#include "sockclient/SocketConnectionException.h"
 #include "sockclient/SocketCreationException.h"
 #include "sockclient/CurrentDirectoryException.h"
 #include "sockclient/Client.h"
+#include "sockophil/protocol.h"
 
 namespace sockclient {
 
@@ -60,8 +64,69 @@ namespace sockclient {
      * Calls the menu to prompt the user for input and reacts on it.
      */
     void Client::run() {
-        this->menu->selection_prompt();
+        bool check = true;
+        while(check) {
+            auto selection = this->menu->selection_prompt();
+            switch(selection.get_action()) {
+                case sockophil::list:
+                    this->request_a_list();
+                    break;
+                case sockophil::quit:
+                    this->bid_server_farewell();
+                    check = false;
+                    break;
+                case sockophil::get:
+                    this->download_a_file(selection.get_filename());
+                    break;
+                case sockophil::put:
+                    this->upload_a_file(selection.get_filename());
+                    break;
+            }
+        }
     }
+
+    void Client::request_a_list() {
+        this->send_request(sockophil::RequestPackage(sockophil::list));
+    }
+
+    void Client::bid_server_farewell() {
+        this->send_request(sockophil::RequestPackage(sockophil::quit));
+    }
+
+    void Client::upload_a_file(std::string filename) {
+        std::vector<uint8_t> content;
+        std::ifstream ifs(filename, std::ios::binary);
+        std::for_each(std::istreambuf_iterator<char>(ifs),
+                      std::istreambuf_iterator<char>(),
+                      [&content](const char c){
+                          content.push_back(c);
+                      });
+        this->send_request(sockophil::RequestPackage(sockophil::put, filename, content.size()));
+        this->send_data(sockophil::DataPackage(content));
+
+    }
+
+    void Client::download_a_file(std::string filename) {
+        this->send_request(sockophil::RequestPackage(sockophil::get, filename));
+    }
+
+    void Client::send_request(const sockophil::RequestPackage &package) const {
+        this->send_to_server(package.to_send_string());
+    }
+
+    void Client::send_data(const sockophil::DataPackage &package) const {
+        this->send_to_server(package.to_send_string());
+    }
+
+    void Client::send_to_server(const std::string &data) const {
+        for (unsigned i = 0; i < data.length(); i += sockophil::BUF) {
+            std::cout << i << std::endl;
+            auto data_part = data.substr(i, sockophil::BUF);
+            std::vector<char> buffer(data_part.begin(), data_part.end());
+            send(this->socket_descriptor, buffer.data(), buffer.size(), 0);
+        }
+    }
+
 
     /**
      * Try to connect to the socket

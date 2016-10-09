@@ -3,6 +3,7 @@
 //
 
 #include <string>
+#include <nlohmann/json.hpp>
 #include "sockclient/NoFilenameException.h"
 #include "sockclient/ClientSelection.h"
 
@@ -40,5 +41,13 @@ namespace sockclient {
      */
     std::string ClientSelection::get_filename() const noexcept {
         return this->filename;
+    }
+
+    nlohmann::json ClientSelection::to_json() const {
+        nlohmann::json jsn = {
+                {"action", this->get_action()},
+                {"filename", this->get_filename()}
+        };
+        return jsn;
     }
 }

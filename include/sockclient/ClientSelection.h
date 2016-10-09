@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "nlohmann/json.hpp"
 #include "sockophil/protocol.h"
 
 namespace sockclient {
@@ -25,6 +26,7 @@ namespace sockclient {
         ClientSelection(sockophil::client_action action);
         std::string get_filename() const noexcept;
         sockophil::client_action get_action() const noexcept;
+        nlohmann::json to_json() const;
     };
 
 }

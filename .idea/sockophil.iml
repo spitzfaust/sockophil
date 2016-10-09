@@ -4,7 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrnoException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Validator.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/RequestPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/sockserver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
