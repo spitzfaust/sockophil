@@ -8,6 +8,7 @@
 #include <memory>
 #include <netinet/in.h>
 #include "sockclient/Menu.h"
+#include "sockophil/Package.h"
 #include "sockophil/RequestPackage.h"
 #include "sockophil/DataPackage.h"
 
@@ -53,9 +54,9 @@ namespace sockclient {
         void download_a_file(std::string filename);
         void upload_a_file(std::string filename);
         void bid_server_farewell();
-        void send_to_server(const std::string &data) const;
-        void send_request(const sockophil::RequestPackage &package) const;
-        void send_data(const sockophil::DataPackage &package) const;
+        void send_to_server(const std::shared_ptr<sockophil::Package> data) const;
+        void send_request(const std::shared_ptr<sockophil::RequestPackage> package) const;
+        void send_data(const std::shared_ptr<sockophil::DataPackage> package) const;
         std::string receive_response() const;
     public:
         Client(unsigned short port, std::string ip_address);

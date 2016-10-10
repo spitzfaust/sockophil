@@ -5,11 +5,13 @@
 
 
 #include <string>
+#include "cereal/types/polymorphic.hpp"
+#include "cereal/archives/portable_binary.hpp"
+#include "sockophil/Package.h"
 #include "sockophil/protocol.h"
-#include "nlohmann/json.hpp"
 
 namespace sockophil {
-    class RequestPackage {
+    class RequestPackage : public Package {
         /**
          * @var action to perform
          */
@@ -23,22 +25,24 @@ namespace sockophil {
          */
         unsigned long filesize;
     public:
+        RequestPackage() = default;
         RequestPackage(sockophil::client_action action, std::string filename, unsigned long filesize);
 
         RequestPackage(sockophil::client_action action, std::string filename);
 
         RequestPackage(sockophil::client_action action);
 
-        RequestPackage(nlohmann::json jsn);
-
         std::string get_filename() const noexcept;
 
         sockophil::client_action get_action() const noexcept;
 
-        unsigned int get_filesize() const noexcept;
+        unsigned long get_filesize() const noexcept;
 
-        nlohmann::json to_json() const;
+        std::string get_type() const noexcept;
 
-        std::string to_send_string() const;
+        template<class Archive>
+        void serialize(Archive &ar);
     };
 }
+CEREAL_REGISTER_TYPE(sockophil::RequestPackage);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(sockophil::Package, sockophil::RequestPackage)

@@ -8,10 +8,12 @@
 #include <memory>
 #include <cstring>
 #include <arpa/inet.h>
-#include <sockophil/constants.h>
-#include <sockophil/DataPackage.h>
+#include <sstream>
 #include <fstream>
+#include "cereal/archives/portable_binary.hpp"
 #include "nlohmann/json.hpp"
+#include "sockophil/constants.h"
+#include "sockophil/DataPackage.h"
 #include "sockclient/SocketConnectionException.h"
 #include "sockclient/SocketCreationException.h"
 #include "sockclient/CurrentDirectoryException.h"
@@ -86,11 +88,11 @@ namespace sockclient {
     }
 
     void Client::request_a_list() {
-        this->send_request(sockophil::RequestPackage(sockophil::list));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::list));
     }
 
     void Client::bid_server_farewell() {
-        this->send_request(sockophil::RequestPackage(sockophil::quit));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::quit));
     }
 
     void Client::upload_a_file(std::string filename) {
@@ -101,24 +103,33 @@ namespace sockclient {
                       [&content](const char c){
                           content.push_back(c);
                       });
-        this->send_request(sockophil::RequestPackage(sockophil::put, filename, content.size()));
-        this->send_data(sockophil::DataPackage(content));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::put, filename, content.size()));
+        this->send_data(std::make_shared<sockophil::DataPackage>(content));
 
     }
 
     void Client::download_a_file(std::string filename) {
-        this->send_request(sockophil::RequestPackage(sockophil::get, filename));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::get, filename));
     }
 
-    void Client::send_request(const sockophil::RequestPackage &package) const {
-        this->send_to_server(package.to_send_string());
+    void Client::send_request(const std::shared_ptr<sockophil::RequestPackage> package) const {
+        this->send_to_server(package);
     }
 
-    void Client::send_data(const sockophil::DataPackage &package) const {
-        this->send_to_server(package.to_send_string());
+    void Client::send_data(const std::shared_ptr<sockophil::DataPackage> package) const {
+        this->send_to_server(package);
     }
 
-    void Client::send_to_server(const std::string &data) const {
+    void Client::send_to_server(const std::shared_ptr<sockophil::Package> package) const {
+        std::stringstream ss; // any stream can be used
+
+        {
+            cereal::PortableBinaryOutputArchive oarchive(ss);
+            oarchive(package);
+        }
+
+        std::string data = ss.str();
+        data = std::to_string(data.size()) + "|" + data;
         for (unsigned i = 0; i < data.length(); i += sockophil::BUF) {
             std::cout << i << std::endl;
             auto data_part = data.substr(i, sockophil::BUF);

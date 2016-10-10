@@ -6,19 +6,22 @@
 
 #include <string>
 #include <vector>
-#include "nlohmann/json.hpp"
+#include "cereal/types/polymorphic.hpp"
+#include "cereal/archives/portable_binary.hpp"
+#include "sockophil/Package.h"
+
 
 namespace sockophil {
-    class DataPackage {
-        /** @todo should maybe be a vector<char> */
-        std::string data_base64;
+    class DataPackage : public Package {
         std::vector<uint8_t> data_raw;
     public:
+        DataPackage() = default;
         DataPackage(std::vector<uint8_t> data_raw);
-        DataPackage(std::string data_base64);
-        std::string get_data_base64() const noexcept;
         std::vector<uint8_t> get_data_raw() const noexcept;
-        nlohmann::json to_json() const noexcept;
-        std::string to_send_string() const noexcept;
+        std::string get_type() const noexcept;
+        template<class Archive>
+        void serialize(Archive &ar);
     };
 }
+CEREAL_REGISTER_TYPE(sockophil::DataPackage);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(sockophil::Package, sockophil::DataPackage)
