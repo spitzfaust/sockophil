@@ -11,10 +11,9 @@ namespace sockophil {
     const unsigned int MIN_PORT = 1024;
     const unsigned int DEFAULT_PORT = 1337;
     const unsigned int BUF = 1024;
-    const std::string START_REQUEST = "START_REQUEST";
-    const std::string END_REQUEST = "END_REQUEST";
-    const std::string START_DATA = "START_DATA";
-    const std::string END_DATA = "END_DATA";
+    const std::string DATA_PACKAGE = "DATA_PACKAGE";
+    const std::string REQUEST_PACKAGE = "REQUEST_PACKAGE";
+
 
 
 }

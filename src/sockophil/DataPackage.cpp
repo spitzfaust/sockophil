@@ -3,6 +3,7 @@
 //
 
 #include "cereal/types/vector.hpp"
+#include "sockophil/constants.h"
 #include "sockophil/DataPackage.h"
 
 namespace sockophil {
@@ -14,7 +15,7 @@ namespace sockophil {
     }
 
     std::string DataPackage::get_type() const noexcept {
-        return "DataPackage";
+        return DATA_PACKAGE;
     }
 
     template<class Archive>

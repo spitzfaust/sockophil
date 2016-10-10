@@ -6,7 +6,7 @@
 
 #include "sockophil/ErrnoException.h"
 
-namespace sockclient {
+namespace sockophil {
     /**
      * @class SocketCreationException SocketCreationException.h "sockclient/SocketCreationException.h"
      * @brief Is throwen if the creation of the socket was not successful

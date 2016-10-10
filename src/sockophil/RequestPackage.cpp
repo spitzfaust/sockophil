@@ -29,7 +29,7 @@ namespace sockophil {
     }
 
     std::string RequestPackage::get_type() const noexcept {
-        return "RequestPackage";
+        return REQUEST_PACKAGE;
     }
 
     template<class Archive>

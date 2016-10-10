@@ -15,7 +15,7 @@
 #include "sockophil/constants.h"
 #include "sockophil/DataPackage.h"
 #include "sockclient/SocketConnectionException.h"
-#include "sockclient/SocketCreationException.h"
+#include "sockophil/SocketCreationException.h"
 #include "sockclient/CurrentDirectoryException.h"
 #include "sockclient/Client.h"
 #include "sockophil/protocol.h"
@@ -52,7 +52,7 @@ namespace sockclient {
     void Client::create_socket() {
         this->socket_descriptor = socket(AF_INET, SOCK_STREAM, 0);
         if(this->socket_descriptor == -1) {
-            throw SocketCreationException(errno);
+            throw sockophil::SocketCreationException(errno);
         }
         std::memset(&this->address,0,sizeof(this->address));
         this->address.sin_family = AF_INET;
@@ -127,13 +127,15 @@ namespace sockclient {
             cereal::PortableBinaryOutputArchive oarchive(ss);
             oarchive(package);
         }
-
         std::string data = ss.str();
-        data = std::to_string(data.size()) + "|" + data;
+        std::string data_size = std::to_string(data.size());
+        send(this->socket_descriptor, data_size.c_str(), data_size.size(), 0);
+
         for (unsigned i = 0; i < data.length(); i += sockophil::BUF) {
             std::cout << i << std::endl;
             auto data_part = data.substr(i, sockophil::BUF);
             std::vector<char> buffer(data_part.begin(), data_part.end());
+            std::cout << buffer.size() << std::endl;
             send(this->socket_descriptor, buffer.data(), buffer.size(), 0);
         }
     }

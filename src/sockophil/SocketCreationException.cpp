@@ -4,9 +4,9 @@
 
 #include <cstring>
 #include <sockophil/ErrnoException.h>
-#include "sockclient/SocketCreationException.h"
+#include "sockophil/SocketCreationException.h"
 
-namespace sockclient {
+namespace sockophil {
     SocketCreationException::SocketCreationException(int error_number)
             : sockophil::ErrnoException(error_number) {}
 }

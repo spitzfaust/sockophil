@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include <memory>
-#include <sockclient/SocketCreationException.h>
+#include <sockophil/SocketCreationException.h>
 #include <sockclient/SocketConnectionException.h>
 #include "sockclient/Client.h"
 #include "sockclient/CurrentDirectoryException.h"
@@ -85,7 +85,7 @@ int main(int argc, const char** argv)
         std::cerr << "Could not resolve current directory. " << std::endl;
         std::cerr << e.what() << std::endl;
         return -1;
-    } catch (const sockclient::SocketCreationException& e) {
+    } catch (const sockophil::SocketCreationException& e) {
         std::cerr << "Could not create the socket. " << std::endl;
         std::cerr << e.what() << std::endl;
         return -1;
