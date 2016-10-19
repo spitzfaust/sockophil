@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <stdlib.h>
+#include <dirent.h>
 #include "rlutil/rlutil.h"
 #include "sockserver/Server.h"
 #include "sockophil/Validator.h"
@@ -63,6 +64,7 @@ int main(int argc, const char** argv)
         return -1;
     }
     dir = args["--dir"].asString();
+
     /* create a new Server object */
     server = std::make_shared<sockserver::Server>(port, dir);
     server->run();

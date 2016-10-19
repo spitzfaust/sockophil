@@ -12,6 +12,8 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <dirent.h>
+#include <algorithm>
 #include "cereal/archives/portable_binary.hpp"
 #include "sockserver/Server.h"
 #include "sockophil/SocketCreationException.h"
@@ -26,6 +28,7 @@
 namespace sockserver {
 
     Server::Server(unsigned short port, std::string target_directory) : port(port), target_directory(target_directory) {
+        this->dir_list();
         this->create_socket();
         this->bind_to_socket();
         this->listen_on_socket();
@@ -180,5 +183,29 @@ namespace sockserver {
         }
         return digits;
     }
-
+    std::string Server::dir_list() const {
+        DIR *dirptr;
+        bool check = true;
+        struct dirent *direntry;
+        std::vector<std::string> filenames;
+        std::string list = "";
+        dirptr = opendir(this->target_directory.c_str());
+        if (dirptr != NULL){
+            while (check) {
+                direntry = readdir(dirptr);
+                if (direntry) {
+                    filenames.push_back(std::string(direntry->d_name));
+                } else {
+                    check = false;
+                }
+            }
+            std::sort(filenames.begin(), filenames.end());
+            for (auto &&filename : filenames) {
+                list = list + filename + "\n";
+            }
+            std::cout << list;
+        }
+        closedir(dirptr);
+        return list;
+    }
 }

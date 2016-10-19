@@ -15,7 +15,6 @@ namespace sockserver {
         struct sockaddr_in server_address;
         struct sockaddr_in client_address;
         std::string target_directory;
-        //std::shared_ptr<Menu> menu;
 
         void create_socket();
 
@@ -26,6 +25,8 @@ namespace sockserver {
         void close_socket();
 
         unsigned int number_digits(long number);
+
+        std::string dir_list() const;
 
     public:
         Server(unsigned short port, std::string target_dir);
