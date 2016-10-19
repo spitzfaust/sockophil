@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/server.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include/sockophil/server.h" isTestSource="false" />
@@ -11,13 +12,34 @@
 =======
 =======
 >>>>>>> 1e11d3ebf8c091d76b65764a30871b4174b292d1
+=======
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Validator.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/RequestPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Helper.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/SocketCreationException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrnoException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/SocketListenException.cpp" isTestSource="false" />
+>>>>>>> 348f33b6806240f7ca57f25dca13bb06ce499218
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/SocketBindException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/Server.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/sockserver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CurrentDirectoryException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/SocketConnectionException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/sockclient.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Client.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/NoFilenameException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CMakeLists.txt" isTestSource="false" />
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Menu.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/ClientSelection.cpp" isTestSource="false" />
+>>>>>>> 348f33b6806240f7ca57f25dca13bb06ce499218
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_private.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt.cpp" isTestSource="false" />
@@ -25,7 +47,10 @@
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_util.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/CMakeLists.txt" isTestSource="false" />
+<<<<<<< HEAD
 >>>>>>> 1e11d3ebf8c091d76b65764a30871b4174b292d1
+=======
+>>>>>>> 348f33b6806240f7ca57f25dca13bb06ce499218
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/src/gtest_main.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/src/gtest-all.cc" isTestSource="false" />
@@ -35,11 +60,16 @@
       <sourceFolder url="file://$MODULE_DIR$/test/server_tests/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/server_tests/basic_check.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/client_tests/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/client_tests/menu_test.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/client_tests/basic_check.cpp" isTestSource="false" />
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> devel
 =======
 >>>>>>> 1e11d3ebf8c091d76b65764a30871b4174b292d1
+=======
+      <sourceFolder url="file://$MODULE_DIR$/test/client_tests/client_selection_test.cpp" isTestSource="false" />
+>>>>>>> 348f33b6806240f7ca57f25dca13bb06ce499218
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
@@ -47,6 +77,7 @@
         <CLASSES>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
           <root url="file:///usr/include" />
           <root url="file:///usr/local/include" />
@@ -57,6 +88,8 @@
 =======
 =======
 >>>>>>> 1e11d3ebf8c091d76b65764a30871b4174b292d1
+=======
+>>>>>>> 348f33b6806240f7ca57f25dca13bb06ce499218
           <root url="file:///usr/include" />
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
           <root url="file:///usr/local/include" />
@@ -65,9 +98,12 @@
           <root url="file:///usr/include" />
           <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> devel
 =======
 >>>>>>> 1e11d3ebf8c091d76b65764a30871b4174b292d1
+=======
+>>>>>>> 348f33b6806240f7ca57f25dca13bb06ce499218
           <root url="file:///usr/local/include" />
         </SOURCES>
       </library>

@@ -6,7 +6,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include "rlutil/rlutil.h"
+#include "sockserver/Server.h"
+#include "sockophil/Validator.h"
 #include "docopt.h"
+
 #include "sockophil/constants.h"
 
 static const char USAGE[] =
@@ -27,35 +30,42 @@ static const char USAGE[] =
 
 int main(int argc, const char** argv)
 {
+    int port = 0;
+    std::string dir = "";
+    std::string version = "sockserver 0.1";
+    /* client pointer that is used later */
+    std::shared_ptr<sockserver::Server> server;
+    /* set the title of the terminal window */
+    rlutil::setConsoleTitle(version);
     std::map<std::string, docopt::value> args
             = docopt::docopt(USAGE,
                              { argv + 1, argv + argc },
                              true,               // show help if requested
-                             "socketserver 0.1");  // version string
+                             version);  // version string
 
-    for(auto const& arg : args) {
-        std::cout << arg.first << "  " <<  arg.second << std::endl;
-    }
     try {
-        auto port = std::stoi(args["--port"].asString());
-        if (port < sockophil::MIN_PORT) {
+        /* convert string to integer */
+        port = std::stoi(args["--port"].asString());
+        /* check if valid port was entered */
+        if (!sockophil::Validator::is_valid_port(port)) {
             std::cerr << "Given port: " << args["--port"].asString() << std::endl;
             std::cerr << "The port has to be bigger than " << sockophil::MIN_PORT << "." << std::endl;
-            return EXIT_FAILURE;
-        } else if (port > sockophil::MAX_PORT) {
-            std::cerr << "Given port: " << args["--port"].asString() << std::endl;
             std::cerr << "The port has to be smaller than " << sockophil::MAX_PORT << "." << std::endl;
-            return EXIT_FAILURE;
+            return -1;
         }
-    } catch (std::invalid_argument e) {
+    } catch (const std::invalid_argument& e) {
         std::cerr << "Given port: " << args["--port"].asString() << std::endl;
         std::cerr << "The argument is not a valid number and can not be a port." << std::endl;
-        return EXIT_FAILURE;
-    } catch (std::out_of_range e) {
+        return -1;
+    } catch (const std::out_of_range& e) {
         std::cerr << "Given port: " << args["--port"].asString() << std::endl;
         std::cerr << "The argument is too big to be a valid port." << std::endl;
-        return EXIT_FAILURE;
+        return -1;
     }
+    dir = args["--dir"].asString();
+    /* create a new Server object */
+    server = std::make_shared<sockserver::Server>(port, dir);
+    server->run();
 
     return 0;
 }
