@@ -128,14 +128,15 @@ namespace sockclient {
             oarchive(package);
         }
         std::string data = ss.str();
-        std::string data_size = std::to_string(data.size());
+        std::string data_size = std::to_string(data.size()) + "|";
+        std::cout << "data_size: " << data_size << std::endl;
         send(this->socket_descriptor, data_size.c_str(), data_size.size(), 0);
 
         for (unsigned i = 0; i < data.length(); i += sockophil::BUF) {
             std::cout << i << std::endl;
             auto data_part = data.substr(i, sockophil::BUF);
             std::vector<char> buffer(data_part.begin(), data_part.end());
-            std::cout << buffer.size() << std::endl;
+            std::cout << "buffer size: " << buffer.size() << std::endl;
             send(this->socket_descriptor, buffer.data(), buffer.size(), 0);
         }
     }

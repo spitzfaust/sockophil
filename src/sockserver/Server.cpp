@@ -101,7 +101,7 @@ namespace sockserver {
                         ss >> size_of_incoming;
                         std::cout << "-- incoming " << size_of_incoming << std::endl;
                         std::cout << "-- 1 size " << size << std::endl;
-                        unsigned int number_of_digets = this->number_digits(size_of_incoming);
+                        unsigned int number_of_digets = this->number_digits(size_of_incoming) + 1;
 
                         if(size > number_of_digets) {
                             std::cout << "-- 1 numd " << number_of_digets << std::endl;
@@ -130,6 +130,7 @@ namespace sockserver {
                     }
 
                     if(size_of_incoming == 0) {
+                        std::cout << "Size of incoming: " << incoming.size() << std::endl;
                         std::stringstream data_stream(std::string(incoming.begin(), incoming.end()));
                         {
                             cereal::PortableBinaryInputArchive iarchive(data_stream);
@@ -141,7 +142,7 @@ namespace sockserver {
                             } else {
                                 auto dta = std::static_pointer_cast<sockophil::DataPackage>(pkg)->get_data_raw();
                                 for (auto &&item : dta) {
-                                    std::cout << item << std::endl;
+                                    //std::cout << item << std::endl;
                                 }
                             }
                         }
