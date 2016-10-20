@@ -138,6 +138,7 @@ namespace sockserver {
                 }
             }
             std::sort(list.begin(), list.end());
+            list.erase(list.begin(), list.begin() + 2);
         }
         closedir(dirptr);
         return list;
