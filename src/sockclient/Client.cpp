@@ -92,7 +92,7 @@ namespace sockclient {
     void Client::request_a_list() {
         this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::list));
         auto pkg = this->receive_list_response();
-        std::cout << pkg->get_list();
+        this->menu->render_list_response(pkg->get_list());
     }
 
     void Client::bid_server_farewell() {

@@ -117,26 +117,22 @@ namespace sockserver {
         this->listen_on_socket();
     }
 
-    std::string Server::dir_list() const {
+    std::vector<std::string> Server::dir_list() const {
         DIR *dirptr;
         bool check = true;
         struct dirent *direntry;
-        std::vector<std::string> filenames;
-        std::string list = "";
+        std::vector<std::string> list;
         dirptr = opendir(this->target_directory.c_str());
         if (dirptr != NULL){
             while (check) {
                 direntry = readdir(dirptr);
                 if (direntry) {
-                    filenames.push_back(std::string(direntry->d_name));
+                    list.push_back(std::string(direntry->d_name));
                 } else {
                     check = false;
                 }
             }
-            std::sort(filenames.begin(), filenames.end());
-            for (auto &&filename : filenames) {
-                list = list + filename + "\n";
-            }
+            std::sort(list.begin(), list.end());
         }
         closedir(dirptr);
         return list;

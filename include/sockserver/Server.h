@@ -26,7 +26,7 @@ namespace sockserver {
 
         void close_socket();
 
-        std::string dir_list() const;
+        std::vector<std::string> dir_list() const;
 
     public:
         Server(unsigned short port, std::string target_dir);

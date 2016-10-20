@@ -211,4 +211,20 @@ namespace sockclient {
     std::string Menu::clear_eol() const noexcept {
         return "\x1B[K";
     }
+
+    void Menu::render_list_response(std::vector<std::string> list) const noexcept {
+        this->render_hr('-');
+        rlutil::setColor(rlutil::LIGHTGREEN);
+        if(list.empty()){
+            std::cout << "No files on the server." << std::endl;
+        } else {
+            std::cout << "Files on server:" << std::endl;
+
+            for (auto &&item : list) {
+                std::cout << "|  " << item << std::endl;
+            }
+        }
+        rlutil::resetColor();
+        this->render_hr('-');
+    }
 }

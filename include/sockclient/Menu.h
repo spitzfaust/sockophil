@@ -44,12 +44,13 @@ namespace sockclient {
         std::string clear_eol() const noexcept;
         sockophil::client_action action_prompt() const noexcept;
         std::string filename_prompt() const noexcept;
-
     public:
+
         Menu(int port, std::string ip_address, std::string current_directory);
         ~Menu();
         ClientSelection selection_prompt();
         std::string get_connected_on() const noexcept;
         std::string get_current_directory() const noexcept;
+        void render_list_response(std::vector<std::string> list) const noexcept;
     };
 }

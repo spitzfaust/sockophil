@@ -4,17 +4,18 @@
 
 #pragma once
 #include <string>
+#include <vector>
 #include "cereal/types/polymorphic.hpp"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/Package.h"
 
 namespace sockophil {
     class ListPackage : public Package {
-        std::string list;
+        std::vector<std::string> list;
     public:
         ListPackage() = default;
-        ListPackage(std::string list);
-        std::string get_list() const noexcept;
+        ListPackage(std::vector<std::string> list);
+        std::vector<std::string> get_list() const noexcept;
         std::string get_type() const noexcept;
         template<class Archive>
         void serialize(Archive &ar);
