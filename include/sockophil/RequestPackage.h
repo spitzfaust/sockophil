@@ -2,7 +2,7 @@
 // Created by tobias on 09/10/16.
 //
 
-
+#pragma once
 
 #include <string>
 #include "cereal/types/polymorphic.hpp"

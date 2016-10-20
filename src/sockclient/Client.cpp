@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <sstream>
 #include <fstream>
+#include <sockophil/Networking.h>
+#include "sockophil/Helper.h"
 #include "cereal/archives/portable_binary.hpp"
 #include "nlohmann/json.hpp"
 #include "sockophil/constants.h"
@@ -89,6 +91,8 @@ namespace sockclient {
 
     void Client::request_a_list() {
         this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::list));
+        auto pkg = this->receive_list_response();
+        std::cout << pkg->get_list();
     }
 
     void Client::bid_server_farewell() {
@@ -121,24 +125,7 @@ namespace sockclient {
     }
 
     void Client::send_to_server(const std::shared_ptr<sockophil::Package> package) const {
-        std::stringstream ss; // any stream can be used
-
-        {
-            cereal::PortableBinaryOutputArchive oarchive(ss);
-            oarchive(package);
-        }
-        std::string data = ss.str();
-        std::string data_size = std::to_string(data.size()) + "|";
-        std::cout << "data_size: " << data_size << std::endl;
-        send(this->socket_descriptor, data_size.c_str(), data_size.size(), 0);
-
-        for (unsigned i = 0; i < data.length(); i += sockophil::BUF) {
-            std::cout << i << std::endl;
-            auto data_part = data.substr(i, sockophil::BUF);
-            std::vector<char> buffer(data_part.begin(), data_part.end());
-            std::cout << "buffer size: " << buffer.size() << std::endl;
-            send(this->socket_descriptor, buffer.data(), buffer.size(), 0);
-        }
+        this->send_package(this->socket_descriptor, package);
     }
 
 
@@ -157,6 +144,19 @@ namespace sockclient {
      * Close the socket
      */
     void Client::close_socket() {
-        close(this->socket_descriptor);
+        //close(this->socket_descriptor);
+    }
+
+    std::shared_ptr<sockophil::ListPackage> Client::receive_list_response() const {
+        auto pkg = this->receive_response();
+        if(pkg->get_type() == sockophil::LIST_PACKAGE) {
+            return std::static_pointer_cast<sockophil::ListPackage>(pkg);
+        } else {
+            // @todo throw something
+        }
+    }
+
+    std::shared_ptr<sockophil::Package> Client::receive_response() const {
+        return this->receive_package(this->socket_descriptor);
     }
 }

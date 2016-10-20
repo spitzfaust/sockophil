@@ -13,6 +13,9 @@ namespace sockophil {
     const unsigned int BUF = 1024;
     const std::string DATA_PACKAGE = "DATA_PACKAGE";
     const std::string REQUEST_PACKAGE = "REQUEST_PACKAGE";
+    const std::string LIST_PACKAGE = "LIST_PACKAGE";
+    const std::string SIZE_DELIM = "|";
+    const unsigned int HEADER_SIZE = 22;
 
 
 

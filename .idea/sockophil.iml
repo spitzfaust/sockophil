@@ -6,8 +6,11 @@
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/RequestPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Helper.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ListPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/SocketCreationException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/SocketReceiveException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Networking.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrnoException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/SocketListenException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
@@ -16,12 +19,12 @@
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/sockserver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CurrentDirectoryException.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/SocketConnectionException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Menu.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/sockclient.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Client.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/NoFilenameException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/SocketConnectionException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Menu.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/ClientSelection.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_private.h" isTestSource="false" />

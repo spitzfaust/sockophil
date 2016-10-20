@@ -7,8 +7,10 @@
 #include <string>
 #include <memory>
 #include <netinet/in.h>
+#include "sockophil/Networking.h"
 #include "sockclient/Menu.h"
 #include "sockophil/Package.h"
+#include "sockophil/ListPackage.h"
 #include "sockophil/RequestPackage.h"
 #include "sockophil/DataPackage.h"
 
@@ -18,7 +20,7 @@ namespace sockclient {
      * @class Client client.h "sockclient/client.h"
      * @brief Class that is used to interact with the server
      */
-    class Client {
+    class Client : public sockophil::Networking {
         /**
          * @var port is the socket port
          */
@@ -57,7 +59,9 @@ namespace sockclient {
         void send_to_server(const std::shared_ptr<sockophil::Package> data) const;
         void send_request(const std::shared_ptr<sockophil::RequestPackage> package) const;
         void send_data(const std::shared_ptr<sockophil::DataPackage> package) const;
-        std::string receive_response() const;
+
+        std::shared_ptr<sockophil::Package> receive_response() const;
+        std::shared_ptr<sockophil::ListPackage> receive_list_response() const;
     public:
         Client(unsigned short port, std::string ip_address);
         ~Client();

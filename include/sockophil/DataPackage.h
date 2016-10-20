@@ -24,4 +24,4 @@ namespace sockophil {
     };
 }
 CEREAL_REGISTER_TYPE(sockophil::DataPackage);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(sockophil::Package, sockophil::DataPackage)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(sockophil::Package, sockophil::DataPackage);

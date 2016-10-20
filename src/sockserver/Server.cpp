@@ -14,6 +14,8 @@
 #include <sstream>
 #include <dirent.h>
 #include <algorithm>
+#include "sockophil/Helper.h"
+#include "sockophil/ListPackage.h"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockserver/Server.h"
 #include "sockophil/SocketCreationException.h"
@@ -31,17 +33,6 @@ namespace sockserver {
         this->dir_list();
         this->create_socket();
         this->bind_to_socket();
-        this->listen_on_socket();
-
-
-
-        /* Write back a message to the sending client */
-        int message = write(this->socket_descriptor, "I got your message", 18);
-
-        if (message < 0) {
-            /* write error*/
-        };
-        this->close_socket();
     }
     Server::~Server() {
         this->close_socket();
@@ -76,93 +67,45 @@ namespace sockserver {
         if(listen(this->socket_descriptor, 5) < 0) {
             throw SocketListenException(errno);
         }
+        bool keep_listening = true;
         socklen_t client_address_length = sizeof(struct sockaddr_in);
-        while (true) {
-            int accepted_socket = 0;
+        int accepted_socket = -1;
+        while (keep_listening) {
             std::cout << "Waiting for clients..." << std::endl;
             /* we start listening */
-            accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &this->client_address, &client_address_length);
-            if (accepted_socket < 0) {
-                //throw SocketAcceptException(errno);
-                break;
-            } else {
-                std::cout << "Client connected from " << inet_ntoa(this->client_address.sin_addr) << ": " << ntohs(this->client_address.sin_port) << std::endl;
-                // @todo maybe message to client that server is ready
-            }
-            char buffer[sockophil::BUF] = "";
-            std::vector<char> incoming;
-            ssize_t size = 0;
-            long size_of_incoming = 0;
-            do {
-                size = recv(accepted_socket, buffer, (sockophil::BUF - 1), 0);
-                if (size > 0) {
-                    buffer[size] = '\0';
-                    if(size_of_incoming == 0){
-                        incoming.clear();
-                        std::stringstream ss;
-                        ss << buffer;
-                        ss >> size_of_incoming;
-                        std::cout << "-- incoming " << size_of_incoming << std::endl;
-                        std::cout << "-- 1 size " << size << std::endl;
-                        unsigned int number_of_digets = this->number_digits(size_of_incoming) + 1;
-
-                        if(size > number_of_digets) {
-                            std::cout << "-- 1 numd " << number_of_digets << std::endl;
-                            std::cout << "-- 1 size " << size << std::endl;
-                            for (unsigned long i = number_of_digets; i < size && size_of_incoming >= 0; ++i) {
-                                std::cout << "-- 1 for soi: " << size_of_incoming << std::endl;
-                                std::cout << "-- 1 for i:   " << i <<std::endl;
-                                incoming.push_back(buffer[i]);
-                                std::cout << "-- 1 buf:     " << buffer[i] << std::endl;
-                                if(size_of_incoming > 0) {
-                                    --size_of_incoming;
-                                }
-                            }
-                            std::cout << "-- 1 soi " << size_of_incoming;
-                        }
-                    } else {
-                        for (unsigned long i = 0; i < size && size_of_incoming >= 0; ++i) {
-                            std::cout << "-- 2 for soi: " << size_of_incoming << std::endl;
-                            std::cout << "-- 2 for i:   " << i << std::endl;
-                            incoming.push_back(buffer[i]);
-                            std::cout << "-- 2 buf:     " << buffer[i] << std::endl;
-                            if(size_of_incoming > 0) {
-                                --size_of_incoming;
-                            }
-                        }
-                    }
-
-                    if(size_of_incoming == 0) {
-                        std::cout << "Size of incoming: " << incoming.size() << std::endl;
-                        std::stringstream data_stream(std::string(incoming.begin(), incoming.end()));
-                        {
-                            cereal::PortableBinaryInputArchive iarchive(data_stream);
-                            std::shared_ptr<sockophil::Package> pkg;
-                            iarchive(pkg);
-                            std::cout << "-- PACKAGE: " << pkg->get_type() << std::endl;
-                            if(pkg->get_type() == sockophil::REQUEST_PACKAGE) {
-                                std::cout << std::static_pointer_cast<sockophil::RequestPackage>(pkg)->get_action() << std::endl;
-                            } else {
-                                auto dta = std::static_pointer_cast<sockophil::DataPackage>(pkg)->get_data_raw();
-                                for (auto &&item : dta) {
-                                    //std::cout << item << std::endl;
-                                }
-                            }
-                        }
-                    }
-
-
-                    /**/
-                } else if (size == 0) {
-                    std::cout << "Client closed remote socket" << std::endl;
+            if(accepted_socket < 0) {
+                accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &this->client_address,
+                                         &client_address_length);
+                if (accepted_socket < 0) {
+                    //throw SocketAcceptException(errno);
                     break;
                 } else {
-                    //this->server_error("recv error");
-                    std::terminate();
+                    std::cout << "Client connected from " << inet_ntoa(this->client_address.sin_addr) << ": "
+                              << ntohs(this->client_address.sin_port) << std::endl;
+                    // @todo maybe message to client that server is ready
                 }
-            } while (true);
-            close(accepted_socket);
-            printf("Here is the message: %s\n", buffer);
+            }
+
+            auto received_pkg = this->receive_package(accepted_socket);
+            std::cout << received_pkg->get_type() << std::endl;
+            if(received_pkg->get_type() == sockophil::REQUEST_PACKAGE) {
+                switch(std::static_pointer_cast<sockophil::RequestPackage>(received_pkg)->get_action()) {
+                    case sockophil::list:
+                        this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->dir_list()));
+                        break;
+                    case sockophil::quit:
+                        close(accepted_socket);
+                        keep_listening = false;
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                auto dta = std::static_pointer_cast<sockophil::DataPackage>(received_pkg)->get_data_raw();
+                for (auto &&item : dta) {
+                    //std::cout << item << std::endl;
+                }
+            }
         }
     }
 
@@ -174,15 +117,6 @@ namespace sockserver {
         this->listen_on_socket();
     }
 
-    unsigned int Server::number_digits(long number) {
-        unsigned int digits = 0;
-        if (number < 0) digits = 1;
-        while (number) {
-            number /= 10;
-            digits++;
-        }
-        return digits;
-    }
     std::string Server::dir_list() const {
         DIR *dirptr;
         bool check = true;
@@ -203,7 +137,6 @@ namespace sockserver {
             for (auto &&filename : filenames) {
                 list = list + filename + "\n";
             }
-            std::cout << list;
         }
         closedir(dirptr);
         return list;

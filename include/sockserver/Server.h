@@ -6,9 +6,11 @@
 #include <string>
 #include <memory>
 #include <netinet/in.h>
+#include "sockophil/Networking.h"
+#include "sockophil/Package.h"
 
 namespace sockserver {
-    class Server {
+    class Server : public sockophil::Networking {
     private:
         unsigned short port;
         int socket_descriptor;
@@ -23,8 +25,6 @@ namespace sockserver {
         void listen_on_socket();
 
         void close_socket();
-
-        unsigned int number_digits(long number);
 
         std::string dir_list() const;
 

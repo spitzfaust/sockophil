@@ -6,6 +6,11 @@
 
 #include <string>
 
-class Helper {
-    static std::string parse_filename(const std::string &filepath);
-};
+namespace sockophil {
+    class Helper {
+    public:
+        static std::string parse_filename(const std::string &filepath);
+
+        static unsigned int number_digits(long number);
+    };
+}
