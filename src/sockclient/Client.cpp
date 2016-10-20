@@ -101,14 +101,19 @@ namespace sockclient {
 
     void Client::upload_a_file(std::string filepath) {
         std::vector<uint8_t> content;
-        std::ifstream ifs(filepath, std::ios::in | std::ios::binary);
-        std::for_each(std::istreambuf_iterator<char>(ifs),
-                      std::istreambuf_iterator<char>(),
-                      [&content](const char c){
-                          content.push_back(c);
-                      });
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::put));
-        this->send_data(std::make_shared<sockophil::DataPackage>(content, sockophil::Helper::parse_filename(filepath)));
+        std::ifstream in_file;
+        in_file.open(filepath, std::ios::in | std::ios::binary);
+        if(in_file.is_open()) {
+            std::for_each(std::istreambuf_iterator<char>(in_file),
+                          std::istreambuf_iterator<char>(),
+                          [&content](const char c){
+                              content.push_back(c);
+                          });
+            this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::put));
+            this->send_data(std::make_shared<sockophil::DataPackage>(content, sockophil::Helper::parse_filename(filepath)));
+        } else {
+            this->menu->render_error("Put Error: File could not be opened!");
+        }
 
     }
 

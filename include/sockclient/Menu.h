@@ -35,22 +35,23 @@ namespace sockclient {
 
          */
         int terminal_height;
-        void render_hr(const char filling, const int color) const noexcept;
         void render_centered_msg(const std::string& message, const char filling, const int color) const noexcept;
         void render_welcome_msg() const noexcept;
         void render_action_prompt() const noexcept;
         void render_filename_prompt() const noexcept;
+        void render_hr(const char filling, const int color) const noexcept;
         void update_terminal_dimensions() noexcept;
         std::string clear_eol() const noexcept;
         sockophil::client_action action_prompt() const noexcept;
         std::string filename_prompt() const noexcept;
     public:
-
         Menu(int port, std::string ip_address, std::string current_directory);
+
         ~Menu();
         ClientSelection selection_prompt();
         std::string get_connected_on() const noexcept;
         std::string get_current_directory() const noexcept;
         void render_list_response(std::vector<std::string> list) const noexcept;
+        void render_error(std::string error_msg) const noexcept;
     };
 }

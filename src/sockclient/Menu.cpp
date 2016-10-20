@@ -227,4 +227,13 @@ namespace sockclient {
         rlutil::resetColor();
         this->render_hr('-');
     }
+
+    void Menu::render_error(std::string error_msg) const noexcept {
+        this->render_hr('-', rlutil::RED);
+        rlutil::setColor(rlutil::RED);
+        std::cout << error_msg << std::endl;
+        rlutil::resetColor();
+        this->render_hr('-', rlutil::RED);
+
+    }
 }
