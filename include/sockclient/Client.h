@@ -54,7 +54,7 @@ namespace sockclient {
         void close_socket();
         void request_a_list();
         void download_a_file(std::string filename);
-        void upload_a_file(std::string filename);
+        void upload_a_file(std::string filepath);
         void bid_server_farewell();
         void send_to_server(const std::shared_ptr<sockophil::Package> data) const;
         void send_request(const std::shared_ptr<sockophil::RequestPackage> package) const;

@@ -20,13 +20,9 @@ namespace sockophil {
          * @var filename can be the upload or download filename or empty
          */
         std::string filename;
-        /**
-         * @var filesize is the size of the file or empty
-         */
-        unsigned long filesize;
+
     public:
         RequestPackage() = default;
-        RequestPackage(sockophil::client_action action, std::string filename, unsigned long filesize);
 
         RequestPackage(sockophil::client_action action, std::string filename);
 
@@ -35,8 +31,6 @@ namespace sockophil {
         std::string get_filename() const noexcept;
 
         sockophil::client_action get_action() const noexcept;
-
-        unsigned long get_filesize() const noexcept;
 
         std::string get_type() const noexcept;
 

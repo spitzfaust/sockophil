@@ -14,6 +14,7 @@
 #include <sstream>
 #include <dirent.h>
 #include <algorithm>
+#include <fstream>
 #include "sockophil/Helper.h"
 #include "sockophil/ListPackage.h"
 #include "cereal/archives/portable_binary.hpp"
@@ -29,7 +30,8 @@
 
 namespace sockserver {
 
-    Server::Server(unsigned short port, std::string target_directory) : port(port), target_directory(target_directory) {
+    Server::Server(unsigned short port, std::string target_directory) : port(port) {
+        this->target_directory = sockophil::Helper::add_trailing_slash(target_directory);
         this->dir_list();
         this->create_socket();
         this->bind_to_socket();
@@ -93,6 +95,9 @@ namespace sockserver {
                     case sockophil::list:
                         this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->dir_list()));
                         break;
+                    case sockophil::put:
+                        this->put_file(accepted_socket);
+                        break;
                     case sockophil::quit:
                         close(accepted_socket);
                         keep_listening = false;
@@ -136,5 +141,17 @@ namespace sockserver {
         }
         closedir(dirptr);
         return list;
+    }
+
+    void Server::put_file(int accepted_socket) {
+        auto received_pkg = this->receive_package(accepted_socket);
+        if(received_pkg->get_type() == sockophil::DATA_PACKAGE) {
+            std::cout << sockophil::DATA_PACKAGE << std::endl;
+            auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
+            std::ofstream output_file;
+            output_file.open(this->target_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
+            output_file.write((char*) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+            output_file.close();
+        }
     }
 }

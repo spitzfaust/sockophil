@@ -11,6 +11,8 @@ namespace sockophil {
     public:
         static std::string parse_filename(const std::string &filepath);
 
+        static std::string add_trailing_slash(std::string filepath);
+
         static unsigned int number_digits(long number);
     };
 }

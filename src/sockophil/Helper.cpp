@@ -21,4 +21,12 @@ namespace sockophil {
         }
         return digits;
     }
+
+    std::string Helper::add_trailing_slash(std::string filepath) {
+        if(filepath[filepath.size() - 1] == '/') {
+            return filepath;
+        } else {
+            return filepath + "/";
+        }
+    }
 }
