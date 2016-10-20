@@ -116,7 +116,7 @@ namespace sockclient {
      * @return the selection the user made
      */
     ClientSelection Menu::selection_prompt() {
-        sockophil::client_action action;
+        sockophil::ClientAction action;
         std::string filename = "";
         this->update_terminal_dimensions();
         if(this->first_run) {
@@ -133,11 +133,11 @@ namespace sockclient {
 
     /**
      * Get input from the user until a valid action is entered
-     * @return the coresponding client_action to the entered string
+     * @return the coresponding ClientAction to the entered string
      */
-    sockophil::client_action Menu::action_prompt() const noexcept {
+    sockophil::ClientAction Menu::action_prompt() const noexcept {
         std::string input_action = "";
-        sockophil::client_action action;
+        sockophil::ClientAction action;
         while (true) {
             this->render_action_prompt();
             std::cin >> input_action;

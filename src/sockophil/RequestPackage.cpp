@@ -7,14 +7,14 @@
 #include "sockophil/RequestPackage.h"
 
 namespace sockophil {
-    RequestPackage::RequestPackage(sockophil::client_action action, std::string filename) :
+    RequestPackage::RequestPackage(sockophil::ClientAction action, std::string filename) :
             action(action),
             filename(filename) {}
 
-    RequestPackage::RequestPackage(sockophil::client_action action)
+    RequestPackage::RequestPackage(sockophil::ClientAction action)
             : RequestPackage(action, "")  {}
 
-    sockophil::client_action RequestPackage::get_action() const noexcept {
+    sockophil::ClientAction RequestPackage::get_action() const noexcept {
         return this->action;
     }
     std::string RequestPackage::get_filename() const noexcept {

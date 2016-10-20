@@ -91,8 +91,13 @@ namespace sockclient {
 
     void Client::request_a_list() {
         this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::list));
-        auto pkg = this->receive_list_response();
-        this->menu->render_list_response(pkg->get_list());
+        auto pkg = this->receive_response();
+        if(pkg->get_type() == sockophil::LIST_PACKAGE) {
+            auto list_pkg = std::static_pointer_cast<sockophil::ListPackage>(pkg);
+            this->menu->render_list_response(list_pkg->get_list());
+        } else {
+            this->menu->render_error("List Error: Server did not send a list!");
+        }
     }
 
     void Client::bid_server_farewell() {
@@ -114,11 +119,26 @@ namespace sockclient {
         } else {
             this->menu->render_error("Put Error: File could not be opened!");
         }
+        in_file.close();
 
     }
 
     void Client::download_a_file(std::string filename) {
         this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::get, filename));
+        auto received_pkg = this->receive_response();
+        if(received_pkg->get_type() == sockophil::DATA_PACKAGE) {
+            auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
+            std::ofstream output_file;
+            output_file.open("./" + data_pkg->get_filename(), std::ios::out | std::ios::binary);
+            if(output_file.is_open()) {
+                output_file.write((char *) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+            } else {
+                this->menu->render_error("Get Error: Could not store the file locally.");
+            }
+            output_file.close();
+        } else if(received_pkg->get_type() == sockophil::ERROR_PACKAGE) {
+            this->menu->render_error("Get Error: Requested file could not be opened on the server.");
+        }
     }
 
     void Client::send_request(const std::shared_ptr<sockophil::RequestPackage> package) const {
@@ -150,15 +170,6 @@ namespace sockclient {
      */
     void Client::close_socket() {
         //close(this->socket_descriptor);
-    }
-
-    std::shared_ptr<sockophil::ListPackage> Client::receive_list_response() const {
-        auto pkg = this->receive_response();
-        if(pkg->get_type() == sockophil::LIST_PACKAGE) {
-            return std::static_pointer_cast<sockophil::ListPackage>(pkg);
-        } else {
-            // @todo throw something
-        }
     }
 
     std::shared_ptr<sockophil::Package> Client::receive_response() const {

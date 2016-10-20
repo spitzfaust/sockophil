@@ -42,7 +42,7 @@ namespace sockclient {
         void render_hr(const char filling, const int color) const noexcept;
         void update_terminal_dimensions() noexcept;
         std::string clear_eol() const noexcept;
-        sockophil::client_action action_prompt() const noexcept;
+        sockophil::ClientAction action_prompt() const noexcept;
         std::string filename_prompt() const noexcept;
     public:
         Menu(int port, std::string ip_address, std::string current_directory);

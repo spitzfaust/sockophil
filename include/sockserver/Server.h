@@ -28,6 +28,8 @@ namespace sockserver {
 
         void put_file(int accepted_socket);
 
+        void return_file(int accepted_socket, std::string filename);
+
         std::vector<std::string> dir_list() const;
 
     public:

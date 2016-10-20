@@ -7,7 +7,10 @@
 #pragma once
 
 namespace sockophil {
-    enum client_action {
+    enum ClientAction {
         list, get, put, quit
+    };
+    enum ErrorCode {
+        file_not_found, wrong_request
     };
 }

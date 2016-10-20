@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Validator.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/RequestPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrorPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Helper.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ListPackage.cpp" isTestSource="false" />

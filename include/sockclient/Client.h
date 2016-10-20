@@ -59,9 +59,8 @@ namespace sockclient {
         void send_to_server(const std::shared_ptr<sockophil::Package> data) const;
         void send_request(const std::shared_ptr<sockophil::RequestPackage> package) const;
         void send_data(const std::shared_ptr<sockophil::DataPackage> package) const;
-
         std::shared_ptr<sockophil::Package> receive_response() const;
-        std::shared_ptr<sockophil::ListPackage> receive_list_response() const;
+
     public:
         Client(unsigned short port, std::string ip_address);
         ~Client();
