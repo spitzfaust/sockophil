@@ -9,6 +9,7 @@
 namespace sockophil {
     class Package {
     public:
+        virtual ~Package() = 0;
         virtual std::string get_type() const noexcept  = 0;
     };
 }

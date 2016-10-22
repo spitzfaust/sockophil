@@ -3,7 +3,7 @@
 //
 
 #include "cereal/types/string.hpp"
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 #include "sockophil/RequestPackage.h"
 
 namespace sockophil {

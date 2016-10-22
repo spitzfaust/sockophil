@@ -3,7 +3,6 @@
 //
 
 #include <string>
-#include <nlohmann/json.hpp>
 #include "sockclient/NoFilenameException.h"
 #include "sockclient/ClientSelection.h"
 
@@ -16,7 +15,7 @@ namespace sockclient {
     ClientSelection::ClientSelection(sockophil::ClientAction action, std::string filename) :
             action(action),
             filename(filename) {
-        if(filename.empty() && ((action == sockophil::put) || (action == sockophil::get))) {
+        if(filename.empty() && ((action == sockophil::PUT) || (action == sockophil::GET))) {
             throw NoFilenameException();
         }
 
@@ -41,13 +40,5 @@ namespace sockclient {
      */
     std::string ClientSelection::get_filename() const noexcept {
         return this->filename;
-    }
-
-    nlohmann::json ClientSelection::to_json() const {
-        nlohmann::json jsn = {
-                {"action", this->get_action()},
-                {"filename", this->get_filename()}
-        };
-        return jsn;
     }
 }

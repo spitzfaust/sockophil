@@ -6,7 +6,7 @@
 
 #include <string>
 #include <vector>
-#include "sockophil/protocol.h"
+#include "sockophil/Protocol.h"
 #include "cereal/types/polymorphic.hpp"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/Package.h"

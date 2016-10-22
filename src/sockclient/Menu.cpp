@@ -26,14 +26,6 @@ namespace sockclient {
     }
 
     /**
-     * Destructor
-     * @todo check if necesary
-     */
-    Menu::~Menu() {
-
-    }
-
-    /**
      * Print a message that is centered horizontaly in the terminal
      * @param message is printed to the terminal
      * @param filling left and right from the message
@@ -124,7 +116,7 @@ namespace sockclient {
             this->first_run = false;
         }
         action = this->action_prompt();
-        if(action == sockophil::put || action == sockophil::get) {
+        if(action == sockophil::PUT || action == sockophil::GET) {
             filename = this->filename_prompt();
             return ClientSelection(action, filename);
         }
@@ -143,16 +135,16 @@ namespace sockclient {
             std::cin >> input_action;
             std::transform(input_action.begin(), input_action.end(), input_action.begin(), ::tolower);
             if(input_action == "list" || input_action == "l") {
-                action = sockophil::list;
+                action = sockophil::LIST;
                 break;
             } else if (input_action == "put" || input_action == "p") {
-                action = sockophil::put;
+                action = sockophil::PUT;
                 break;
             } else if (input_action == "get" || input_action == "g") {
-                action = sockophil::get;
+                action = sockophil::GET;
                 break;
             } else if (input_action == "quit" || input_action == "q") {
-                action = sockophil::quit;
+                action = sockophil::QUIT;
                 break;
             }
 
@@ -235,5 +227,51 @@ namespace sockclient {
         rlutil::resetColor();
         this->render_hr('-', rlutil::RED);
 
+    }
+
+    void Menu::render_error(sockophil::ClientAction action, sockophil::ErrorCode error_code) const noexcept {
+        std::string error_msg = "";
+
+        switch(action) {
+            case sockophil::GET:
+                error_msg = "Get";
+                break;
+            case sockophil::LIST:
+                error_msg = "List";
+                break;
+            case sockophil::PUT:
+                error_msg = "Put";
+                break;
+            case sockophil::QUIT:
+                error_msg = "Quit";
+                break;
+            default:
+                error_msg = "Client";
+                break;
+        }
+        error_msg += " Error: ";
+        switch(error_code) {
+            case sockophil::FILE_NOT_FOUND:
+                error_msg += "Could not find the file.";
+                break;
+            case sockophil::WRONG_PACKAGE:
+                error_msg += "Received an unexpected package.";
+                break;
+            case sockophil::FILE_STORAGE:
+                error_msg += "Could not save the file.";
+                break;
+            default:
+                error_msg += "Unknown error.";
+                break;
+        }
+        this->render_error(error_msg);
+    }
+
+    void Menu::render_success(std::string success_msg) const noexcept {
+        this->render_hr('~', rlutil::LIGHTBLUE);
+        rlutil::setColor(rlutil::LIGHTBLUE);
+        std::cout << success_msg << std::endl;
+        rlutil::resetColor();
+        this->render_hr('~', rlutil::LIGHTBLUE);
     }
 }

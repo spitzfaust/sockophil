@@ -8,9 +8,9 @@
 
 namespace sockophil {
     enum ClientAction {
-        list, get, put, quit
+        LIST, GET, PUT, QUIT
     };
     enum ErrorCode {
-        file_not_found, wrong_request
+        FILE_NOT_FOUND, WRONG_PACKAGE, FILE_STORAGE
     };
 }

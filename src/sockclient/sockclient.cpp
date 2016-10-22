@@ -13,7 +13,7 @@
 #include "rlutil/rlutil.h"
 #include "docopt.h"
 
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 
 
 /**

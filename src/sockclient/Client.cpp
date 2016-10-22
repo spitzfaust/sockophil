@@ -11,16 +11,16 @@
 #include <sstream>
 #include <fstream>
 #include <sockophil/Networking.h>
+#include <algorithm>
 #include "sockophil/Helper.h"
 #include "cereal/archives/portable_binary.hpp"
-#include "nlohmann/json.hpp"
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 #include "sockophil/DataPackage.h"
 #include "sockclient/SocketConnectionException.h"
 #include "sockophil/SocketCreationException.h"
 #include "sockclient/CurrentDirectoryException.h"
 #include "sockclient/Client.h"
-#include "sockophil/protocol.h"
+#include "sockophil/Protocol.h"
 
 namespace sockclient {
 
@@ -72,17 +72,17 @@ namespace sockclient {
         while(check) {
             auto selection = this->menu->selection_prompt();
             switch(selection.get_action()) {
-                case sockophil::list:
+                case sockophil::LIST:
                     this->request_a_list();
                     break;
-                case sockophil::quit:
+                case sockophil::QUIT:
                     this->bid_server_farewell();
                     check = false;
                     break;
-                case sockophil::get:
+                case sockophil::GET:
                     this->download_a_file(selection.get_filename());
                     break;
-                case sockophil::put:
+                case sockophil::PUT:
                     this->upload_a_file(selection.get_filename());
                     break;
             }
@@ -90,7 +90,7 @@ namespace sockclient {
     }
 
     void Client::request_a_list() {
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::list));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::LIST));
         auto pkg = this->receive_response();
         if(pkg->get_type() == sockophil::LIST_PACKAGE) {
             auto list_pkg = std::static_pointer_cast<sockophil::ListPackage>(pkg);
@@ -101,21 +101,35 @@ namespace sockclient {
     }
 
     void Client::bid_server_farewell() {
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::quit));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::QUIT));
+        this->menu->render_success("Goodbye!");
+
     }
 
     void Client::upload_a_file(std::string filepath) {
+        std::shared_ptr<sockophil::Package> received_pkg = nullptr;
         std::vector<uint8_t> content;
         std::ifstream in_file;
         in_file.open(filepath, std::ios::in | std::ios::binary);
         if(in_file.is_open()) {
+            std::string filename = sockophil::Helper::parse_filename(filepath);
             std::for_each(std::istreambuf_iterator<char>(in_file),
                           std::istreambuf_iterator<char>(),
                           [&content](const char c){
                               content.push_back(c);
                           });
-            this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::put));
-            this->send_data(std::make_shared<sockophil::DataPackage>(content, sockophil::Helper::parse_filename(filepath)));
+            this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::PUT));
+            this->send_data(std::make_shared<sockophil::DataPackage>(content, filename));
+            received_pkg = this->receive_package(this->socket_descriptor);
+            if(received_pkg->get_type() == sockophil::SUCCESS_PACKAGE) {
+                this->menu->render_success("Successfully uploaded the file " + filename + " to the server!");
+            } else if(received_pkg->get_type() == sockophil::ERROR_PACKAGE) {
+                this->menu->render_error(sockophil::PUT,
+                                         std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg)
+                                                 ->get_error_code());
+            } else {
+                this->menu->render_error(sockophil::PUT, sockophil::WRONG_PACKAGE);
+            }
         } else {
             this->menu->render_error("Put Error: File could not be opened!");
         }
@@ -124,7 +138,7 @@ namespace sockclient {
     }
 
     void Client::download_a_file(std::string filename) {
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::get, filename));
+        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::GET, filename));
         auto received_pkg = this->receive_response();
         if(received_pkg->get_type() == sockophil::DATA_PACKAGE) {
             auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
@@ -132,12 +146,15 @@ namespace sockclient {
             output_file.open("./" + data_pkg->get_filename(), std::ios::out | std::ios::binary);
             if(output_file.is_open()) {
                 output_file.write((char *) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+                this->menu->render_success("Successfully downloaded the file " + data_pkg->get_filename() + " to the current folder!");
             } else {
                 this->menu->render_error("Get Error: Could not store the file locally.");
             }
             output_file.close();
         } else if(received_pkg->get_type() == sockophil::ERROR_PACKAGE) {
-            this->menu->render_error("Get Error: Requested file could not be opened on the server.");
+            this->menu->render_error(sockophil::GET,
+                                     std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg)
+                                             ->get_error_code());
         }
     }
 

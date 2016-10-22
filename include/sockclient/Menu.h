@@ -5,7 +5,8 @@
 #pragma once
 
 #include <string>
-
+#include <vector>
+#include "sockophil/Protocol.h"
 #include "sockclient/ClientSelection.h"
 
 namespace sockclient {
@@ -46,12 +47,12 @@ namespace sockclient {
         std::string filename_prompt() const noexcept;
     public:
         Menu(int port, std::string ip_address, std::string current_directory);
-
-        ~Menu();
         ClientSelection selection_prompt();
         std::string get_connected_on() const noexcept;
         std::string get_current_directory() const noexcept;
         void render_list_response(std::vector<std::string> list) const noexcept;
+        void render_success(std::string success_msg) const noexcept;
         void render_error(std::string error_msg) const noexcept;
+        void render_error(sockophil::ClientAction action, sockophil::ErrorCode error_code) const noexcept;
     };
 }

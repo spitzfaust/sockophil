@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 
 #include "sockophil/Validator.h"
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 
 namespace sockophil {
     /**

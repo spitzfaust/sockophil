@@ -8,7 +8,7 @@
 #include "cereal/types/polymorphic.hpp"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/Package.h"
-#include "sockophil/protocol.h"
+#include "sockophil/Protocol.h"
 
 namespace sockophil {
     class RequestPackage : public Package {

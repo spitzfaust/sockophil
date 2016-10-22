@@ -2,7 +2,7 @@
 // Created by tobias on 20/10/16.
 //
 
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 #include "sockophil/ErrorPackage.h"
 
 namespace sockophil {
