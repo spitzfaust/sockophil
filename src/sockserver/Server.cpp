@@ -79,7 +79,7 @@ namespace sockserver {
                 accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &this->client_address,
                                          &client_address_length);
                 if (accepted_socket < 0) {
-                    //throw SocketAcceptException(errno);
+                    //@todo throw SocketAcceptException(errno);
                     break;
                 } else {
                     std::cout << "Client connected from " << inet_ntoa(this->client_address.sin_addr) << ": "
@@ -106,10 +106,7 @@ namespace sockserver {
                         break;
                 }
             } else {
-                auto dta = std::static_pointer_cast<sockophil::DataPackage>(received_pkg)->get_data_raw();
-                for (auto &&item : dta) {
-                    //std::cout << item << std::endl;
-                }
+                //@todo handle wrong packages / send ErrorPackage
             }
         }
     }
