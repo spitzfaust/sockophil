@@ -8,14 +8,14 @@
 #include "cereal/types/polymorphic.hpp"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/Package.h"
-#include "sockophil/protocol.h"
+#include "sockophil/Protocol.h"
 
 namespace sockophil {
     class RequestPackage : public Package {
         /**
          * @var action to perform
          */
-        sockophil::client_action action;
+        sockophil::ClientAction action;
         /**
          * @var filename can be the upload or download filename or empty
          */
@@ -24,13 +24,13 @@ namespace sockophil {
     public:
         RequestPackage() = default;
 
-        RequestPackage(sockophil::client_action action, std::string filename);
+        RequestPackage(sockophil::ClientAction action, std::string filename);
 
-        RequestPackage(sockophil::client_action action);
+        RequestPackage(sockophil::ClientAction action);
 
         std::string get_filename() const noexcept;
 
-        sockophil::client_action get_action() const noexcept;
+        sockophil::ClientAction get_action() const noexcept;
 
         std::string get_type() const noexcept;
 

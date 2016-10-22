@@ -11,7 +11,7 @@
 #include "sockophil/Validator.h"
 #include "docopt.h"
 
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 
 static const char USAGE[] =
         R"(sockserver.

@@ -8,7 +8,7 @@
 #include <cerrno>
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/SocketReceiveException.h"
-#include "sockophil/constants.h"
+#include "sockophil/Constants.h"
 #include "sockophil/Helper.h"
 #include "sockophil/Networking.h"
 

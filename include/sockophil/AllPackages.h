@@ -8,3 +8,5 @@
 #include "sockophil/DataPackage.h"
 #include "sockophil/ListPackage.h"
 #include "sockophil/RequestPackage.h"
+#include "sockophil/ErrorPackage.h"
+#include "sockophil/SuccessPackage.h"

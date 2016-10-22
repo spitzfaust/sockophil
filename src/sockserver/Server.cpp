@@ -15,17 +15,19 @@
 #include <dirent.h>
 #include <algorithm>
 #include <fstream>
+#include "sockserver/Server.h"
 #include "sockophil/Helper.h"
 #include "sockophil/ListPackage.h"
 #include "cereal/archives/portable_binary.hpp"
-#include "sockserver/Server.h"
 #include "sockophil/SocketCreationException.h"
 #include "sockserver/SocketBindException.h"
 #include "sockserver/SocketListenException.h"
+#include "sockserver/SocketAcceptException.h"
 #include "sockophil/Package.h"
 #include "sockophil/DataPackage.h"
 #include "sockophil/RequestPackage.h"
-#include "sockophil/constants.h"
+#include "sockophil/ErrorPackage.h"
+#include "sockophil/Constants.h"
 
 
 namespace sockserver {
@@ -79,12 +81,10 @@ namespace sockserver {
                 accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &this->client_address,
                                          &client_address_length);
                 if (accepted_socket < 0) {
-                    //@todo throw SocketAcceptException(errno);
-                    break;
+                    throw SocketAcceptException(errno);
                 } else {
                     std::cout << "Client connected from " << inet_ntoa(this->client_address.sin_addr) << ": "
                               << ntohs(this->client_address.sin_port) << std::endl;
-                    // @todo maybe message to client that server is ready
                 }
             }
 
@@ -92,21 +92,22 @@ namespace sockserver {
             std::cout << received_pkg->get_type() << std::endl;
             if(received_pkg->get_type() == sockophil::REQUEST_PACKAGE) {
                 switch(std::static_pointer_cast<sockophil::RequestPackage>(received_pkg)->get_action()) {
-                    case sockophil::list:
+                    case sockophil::LIST:
                         this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->dir_list()));
                         break;
-                    case sockophil::put:
-                        this->put_file(accepted_socket);
+                    case sockophil::PUT:
+                        this->store_file(accepted_socket);
                         break;
-                    case sockophil::quit:
+                    case sockophil::GET:
+                        this->return_file(accepted_socket,
+                                          std::static_pointer_cast<sockophil::RequestPackage>(received_pkg)
+                                                  ->get_filename());
+                        break;
+                    case sockophil::QUIT:
                         close(accepted_socket);
                         keep_listening = false;
                         break;
-                    default:
-                        break;
                 }
-            } else {
-                //@todo handle wrong packages / send ErrorPackage
             }
         }
     }
@@ -135,21 +136,47 @@ namespace sockserver {
                 }
             }
             std::sort(list.begin(), list.end());
-            list.erase(list.begin(), list.begin() + 2);
         }
         closedir(dirptr);
         return list;
     }
 
-    void Server::put_file(int accepted_socket) {
+    void Server::store_file(int accepted_socket) {
         auto received_pkg = this->receive_package(accepted_socket);
+        std::shared_ptr<sockophil::Package> pkg = nullptr;
         if(received_pkg->get_type() == sockophil::DATA_PACKAGE) {
-            std::cout << sockophil::DATA_PACKAGE << std::endl;
             auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
             std::ofstream output_file;
             output_file.open(this->target_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
-            output_file.write((char*) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+            if(output_file.is_open()){
+                output_file.write((char*) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+                pkg = std::make_shared<sockophil::SuccessPackage>();
+            } else {
+                pkg = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_STORAGE);
+            }
             output_file.close();
+        } else {
+            pkg = std::make_shared<sockophil::ErrorPackage>(sockophil::WRONG_PACKAGE);
         }
+        this->send_package(accepted_socket, pkg);
+    }
+
+    void Server::return_file(int accepted_socket, std::string filename) {
+        std::string filepath = this->target_directory + filename;
+        std::vector<uint8_t> content;
+        std::ifstream in_file;
+        std::shared_ptr<sockophil::Package> pkg = nullptr;
+        in_file.open(filepath, std::ios::in | std::ios::binary);
+        if(in_file.is_open()) {
+            std::for_each(std::istreambuf_iterator<char>(in_file),
+                          std::istreambuf_iterator<char>(),
+                          [&content](const char c){
+                              content.push_back(c);
+                          });
+            pkg = std::make_shared<sockophil::DataPackage>(content, filename);
+        } else {
+            pkg = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_NOT_FOUND);
+        }
+        this->send_package(accepted_socket, pkg);
     }
 }
