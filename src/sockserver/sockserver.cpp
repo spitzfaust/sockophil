@@ -14,7 +14,7 @@
 #include "sockophil/Constants.h"
 
 static const char USAGE[] =
-        R"(sockserver.
+    R"(sockserver.
 
     Usage:
       sockserver
@@ -29,45 +29,44 @@ static const char USAGE[] =
       --version                 Show version.
 )";
 
-int main(int argc, const char** argv)
-{
-    int port = 0;
-    std::string dir = "";
-    std::string version = "sockserver 0.1";
-    /* client pointer that is used later */
-    std::shared_ptr<sockserver::Server> server;
-    /* set the title of the terminal window */
-    rlutil::setConsoleTitle(version);
-    std::map<std::string, docopt::value> args
-            = docopt::docopt(USAGE,
-                             { argv + 1, argv + argc },
-                             true,               // show help if requested
-                             version);  // version string
+int main(int argc, const char **argv) {
+  int port = 0;
+  std::string dir = "";
+  std::string version = "sockserver 0.1";
+  /* client pointer that is used later */
+  std::shared_ptr<sockserver::Server> server;
+  /* set the title of the terminal window */
+  rlutil::setConsoleTitle(version);
+  std::map<std::string, docopt::value> args
+      = docopt::docopt(USAGE,
+                       {argv + 1, argv + argc},
+                       true,               // show help if requested
+                       version);  // version string
 
-    try {
-        /* convert string to integer */
-        port = std::stoi(args["--port"].asString());
-        /* check if valid port was entered */
-        if (!sockophil::Validator::is_valid_port(port)) {
-            std::cerr << "Given port: " << args["--port"].asString() << std::endl;
-            std::cerr << "The port has to be bigger than " << sockophil::MIN_PORT << "." << std::endl;
-            std::cerr << "The port has to be smaller than " << sockophil::MAX_PORT << "." << std::endl;
-            return -1;
-        }
-    } catch (const std::invalid_argument& e) {
-        std::cerr << "Given port: " << args["--port"].asString() << std::endl;
-        std::cerr << "The argument is not a valid number and can not be a port." << std::endl;
-        return -1;
-    } catch (const std::out_of_range& e) {
-        std::cerr << "Given port: " << args["--port"].asString() << std::endl;
-        std::cerr << "The argument is too big to be a valid port." << std::endl;
-        return -1;
+  try {
+    /* convert string to integer */
+    port = std::stoi(args["--port"].asString());
+    /* check if valid port was entered */
+    if (!sockophil::Validator::is_valid_port(port)) {
+      std::cerr << "Given port: " << args["--port"].asString() << std::endl;
+      std::cerr << "The port has to be bigger than " << sockophil::MIN_PORT << "." << std::endl;
+      std::cerr << "The port has to be smaller than " << sockophil::MAX_PORT << "." << std::endl;
+      return -1;
     }
-    dir = args["--dir"].asString();
+  } catch (const std::invalid_argument &e) {
+    std::cerr << "Given port: " << args["--port"].asString() << std::endl;
+    std::cerr << "The argument is not a valid number and can not be a port." << std::endl;
+    return -1;
+  } catch (const std::out_of_range &e) {
+    std::cerr << "Given port: " << args["--port"].asString() << std::endl;
+    std::cerr << "The argument is too big to be a valid port." << std::endl;
+    return -1;
+  }
+  dir = args["--dir"].asString();
 
-    /* create a new Server object */
-    server = std::make_shared<sockserver::Server>(port, dir);
-    server->run();
+  /* create a new Server object */
+  server = std::make_shared<sockserver::Server>(port, dir);
+  server->run();
 
-    return 0;
+  return 0;
 }

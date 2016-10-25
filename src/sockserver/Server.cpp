@@ -52,15 +52,9 @@ void Server::create_socket() {
   }
   /* set the whole struct to 0's */
   std::memset(&this->server_address, 0, sizeof(this->server_address));
-  /* telling the server address all values will be IP addresses */
   this->server_address.sin_family = AF_INET;
-  /* dont know yet */
   this->server_address.sin_addr.s_addr = INADDR_ANY;
-  /* telling the server address the port number given to our object and
-   * putting it through htons (host to network short) just in case
-   */
   this->server_address.sin_port = htons(this->port);
-
 }
 
 /**
@@ -76,30 +70,32 @@ void Server::bind_to_socket() {
  * @brief Listen to the socket in an endless loop
  */
 void Server::listen_on_socket() {
-
+  socklen_t client_address_length = sizeof(struct sockaddr_in);
+  struct sockaddr_in client_address;
+  int accepted_socket = -1;
+  /* try to start listening */
   if (listen(this->socket_descriptor, 5) < 0) {
     throw sockophil::SocketListenException(errno);
   }
-  bool keep_listening = true;
-  socklen_t client_address_length = sizeof(struct sockaddr_in);
-  int accepted_socket = -1;
-  while (keep_listening) {
+  while (true) {
     std::cout << "Waiting for clients..." << std::endl;
-    /* we start listening */
+    /* should a new client be accepted */
     if (accepted_socket < 0) {
-      accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &this->client_address,
+      accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &client_address,
                                &client_address_length);
+      /* check if an error happened while accepting */
       if (accepted_socket < 0) {
         throw sockophil::SocketAcceptException(errno);
       } else {
-        std::cout << "Client connected from " << inet_ntoa(this->client_address.sin_addr) << ": "
-                  << ntohs(this->client_address.sin_port) << std::endl;
+        std::cout << "Client connected from " << inet_ntoa(client_address.sin_addr) << ": "
+                  << ntohs(client_address.sin_port) << std::endl;
       }
     }
-
+    /* package that was sent by the client to the server */
     auto received_pkg = this->receive_package(accepted_socket);
-    std::cout << received_pkg->get_type() << std::endl;
+    /* a ActionPackage should be received */
     if (received_pkg->get_type() == sockophil::ACTION_PACKAGE) {
+      /* check which action should be performed */
       switch (std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()) {
         case sockophil::LIST:
           this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->dir_list()));
@@ -114,28 +110,38 @@ void Server::listen_on_socket() {
           break;
         case sockophil::QUIT:
           close(accepted_socket);
-          //keep_listening = false;
+          accepted_socket = -1;
           break;
       }
     }
   }
 }
 
+/**
+ * @brief Close the server socket
+ */
 void Server::close_socket() {
   close(this->socket_descriptor);
 }
 
+/**
+ * @brief Run the server
+ */
 void Server::run() {
   this->listen_on_socket();
 }
-
+/**
+ * @brief get a list of elements in the upload dir
+ * @return a vector of elements in the upload dir
+ */
 std::vector<std::string> Server::dir_list() const {
   DIR *dirptr;
-  bool check = true;
   struct dirent *direntry;
+  bool check = true;
   std::vector<std::string> list;
   dirptr = opendir(this->target_directory.c_str());
   if (dirptr != NULL) {
+    /* store every entry in the vector */
     while (check) {
       direntry = readdir(dirptr);
       if (direntry) {
@@ -144,6 +150,7 @@ std::vector<std::string> Server::dir_list() const {
         check = false;
       }
     }
+    /* sort the vector alphabetically */
     std::sort(list.begin(), list.end());
     /* erase first 2 entries (".","..") */
     list.erase(list.begin(), list.begin() + 2);
@@ -152,42 +159,70 @@ std::vector<std::string> Server::dir_list() const {
   return list;
 }
 
+/**
+ * @brief Store a received file in the upload directory
+ * @param accepted_socket is the socket to listen for the data
+ */
 void Server::store_file(int accepted_socket) {
+  /* try to receive a DataPackage */
   auto received_pkg = this->receive_package(accepted_socket);
-  std::shared_ptr<sockophil::Package> pkg = nullptr;
+  /* Package for the response */
+  std::shared_ptr<sockophil::Package> response_package = nullptr;
+  /* should be a DataPackage */
   if (received_pkg->get_type() == sockophil::DATA_PACKAGE) {
+    /* cast to a DataPackage */
     auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
+    /* file to write to */
     std::ofstream output_file;
+    /* try to open the file */
     output_file.open(this->target_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
+    /* check if file could be opened */
     if (output_file.is_open()) {
+      /* write to the file and create SuccessPackage */
       output_file.write((char *) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
-      pkg = std::make_shared<sockophil::SuccessPackage>();
+      response_package = std::make_shared<sockophil::SuccessPackage>();
     } else {
-      pkg = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_STORAGE);
+      /* file could not be stored */
+      response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_STORAGE);
     }
     output_file.close();
   } else {
-    pkg = std::make_shared<sockophil::ErrorPackage>(sockophil::WRONG_PACKAGE);
+    /* was not the expected DataPackage */
+    response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::WRONG_PACKAGE);
   }
-  this->send_package(accepted_socket, pkg);
+  /* send the response to the client */
+  this->send_package(accepted_socket, response_package);
 }
 
+/**
+ * @brief Send a requested file to the client
+ * @param accepted_socket is the socket that is used to communicate over
+ * @param filename is the requested file
+ */
 void Server::return_file(int accepted_socket, std::string filename) {
+  std::shared_ptr<sockophil::Package> response_package = nullptr;
   std::string filepath = this->target_directory + filename;
-  std::vector<uint8_t> content;
+  /* data of the file */
+  std::vector<uint8_t> file_data;
+  /* file to read from */
   std::ifstream in_file;
-  std::shared_ptr<sockophil::Package> pkg = nullptr;
+  /* try to open the file in binary read mode */
   in_file.open(filepath, std::ios::in | std::ios::binary);
+  /* check if file could be opened */
   if (in_file.is_open()) {
+    /* read the whole file to the vector */
     std::for_each(std::istreambuf_iterator<char>(in_file),
                   std::istreambuf_iterator<char>(),
-                  [&content](const char c) {
-                    content.push_back(c);
+                  [&file_data](const char c) {
+                    file_data.push_back(c);
                   });
-    pkg = std::make_shared<sockophil::DataPackage>(content, filename);
+    /* make a DataPackage as response */
+    response_package = std::make_shared<sockophil::DataPackage>(file_data, filename);
   } else {
-    pkg = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_NOT_FOUND);
+    /* the requested file doesn't exist */
+    response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_NOT_FOUND);
   }
-  this->send_package(accepted_socket, pkg);
+  /* send the response */
+  this->send_package(accepted_socket, response_package);
 }
 }

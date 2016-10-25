@@ -29,10 +29,6 @@ class Server : public sockophil::Networking {
    */
   struct sockaddr_in server_address;
   /**
-   * @var client_address is the address information of the connected client
-   */
-  struct sockaddr_in client_address;
-  /**
    * @var target_directory is the directory the server stores files in
    */
   std::string target_directory;
