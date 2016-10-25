@@ -10,21 +10,21 @@
 #include "sockophil/Package.h"
 
 namespace sockophil {
-    /**
-     * @class SuccessPackage SuccessPackage.h "sockophil/SuccessPackage.h"
-     * @brief This package is sent when an action was successful
-     */
-    class SuccessPackage : public Package {
+/**
+ * @class SuccessPackage SuccessPackage.h "sockophil/SuccessPackage.h"
+ * @brief This package is sent when an action was successful
+ */
+class SuccessPackage : public Package {
 
-    public:
-        /* need a default constructor for Cereal to work */
-        SuccessPackage() = default;
+ public:
+  /* need a default constructor for Cereal to work */
+  SuccessPackage() = default;
 
-        std::string get_type() const noexcept;
+  std::string get_type() const noexcept;
 
-        template<class Archive>
-        void serialize(Archive &ar);
-    };
+  template<class Archive>
+  void serialize(Archive &ar);
+};
 }
 /* Register the serialisation type */
 CEREAL_REGISTER_TYPE(sockophil::SuccessPackage);

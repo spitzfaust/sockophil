@@ -4,29 +4,29 @@
 
 #include "sockophil/Helper.h"
 namespace sockophil {
-    std::string Helper::parse_filename(const std::string &filepath) {
-        auto const pos = filepath.find_last_of('/');
-        if (pos == std::string::npos) {
-            return filepath;
-        }
-        return filepath.substr(pos + 1);
-    }
+std::string Helper::parse_filename(const std::string &filepath) {
+  auto const pos = filepath.find_last_of('/');
+  if (pos == std::string::npos) {
+    return filepath;
+  }
+  return filepath.substr(pos + 1);
+}
 
-    unsigned int Helper::number_digits(long number) {
-        unsigned int digits = 0;
-        if (number < 0) digits = 1;
-        while (number) {
-            number /= 10;
-            digits++;
-        }
-        return digits;
-    }
+unsigned int Helper::number_digits(long number) {
+  unsigned int digits = 0;
+  if (number < 0) digits = 1;
+  while (number) {
+    number /= 10;
+    digits++;
+  }
+  return digits;
+}
 
-    std::string Helper::add_trailing_slash(std::string filepath) {
-        if(filepath[filepath.size() - 1] == '/') {
-            return filepath;
-        } else {
-            return filepath + "/";
-        }
-    }
+std::string Helper::add_trailing_slash(std::string filepath) {
+  if (filepath[filepath.size() - 1] == '/') {
+    return filepath;
+  } else {
+    return filepath + "/";
+  }
+}
 }

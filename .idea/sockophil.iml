@@ -7,9 +7,9 @@
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/src/gtest-all.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib/gtest-1.8.0/cmake/internal_utils.cmake" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/lib_test/helper_tests.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/lib_test/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/lib_test/basic_check.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/lib_test/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/lib_test/helper_tests.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/server_tests/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/server_tests/basic_check.cpp" isTestSource="false" />
@@ -25,31 +25,24 @@
       <sourceFolder url="file://$MODULE_DIR$/lib/docopt.cpp/docopt_util.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/lib/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Validator.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/RequestPackage.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrorPackage.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Helper.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Package.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/SocketCreationException.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/SocketReceiveException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrorPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Package.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrnoExceptions.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Helper.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/SuccessPackage.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ListPackage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ActionPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Networking.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrnoException.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/Server.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/SocketBindException.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/SocketAcceptException.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/SocketListenException.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ListPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/sockserver.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/sockserver/Server.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CurrentDirectoryException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Menu.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/sockclient.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/Client.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/NoFilenameException.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/sockclient/SocketConnectionException.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockclient/ClientSelection.cpp" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
@@ -59,12 +52,12 @@
       <library name="Header Search Paths">
         <CLASSES>
           <root url="file:///usr/include" />
-          <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
+          <root url="file:///usr/lib64/clang/3.8.0/include" />
           <root url="file:///usr/local/include" />
         </CLASSES>
         <SOURCES>
           <root url="file:///usr/include" />
-          <root url="file:///usr/lib/gcc/x86_64-redhat-linux/6.2.1/include" />
+          <root url="file:///usr/lib64/clang/3.8.0/include" />
           <root url="file:///usr/local/include" />
         </SOURCES>
       </library>

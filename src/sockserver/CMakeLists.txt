@@ -1,5 +1,5 @@
 project(sockserver)
-set(SOURCE_FILES Server.cpp SocketBindException.cpp SocketListenException.cpp SocketAcceptException.cpp)
+set(SOURCE_FILES Server.cpp)
 add_library(sockserver_lib ${SOURCE_FILES})
 target_link_libraries(sockserver_lib sockophil_lib)
 add_executable(sockserver sockserver.cpp)

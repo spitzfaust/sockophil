@@ -7,42 +7,42 @@
 #pragma once
 
 namespace sockophil {
-    /**
-     * Actions that can be performed by the Client
-     */
-    enum ClientAction {
-        /**
-         * List all the files in the upload directory
-         */
-        LIST,
-        /**
-         * Get a file from the server
-         */
-        GET,
-        /**
-         * Put a file to the server
-         */
-        PUT,
-        /**
-         * Tell the server that you quit
-         */
-        QUIT
-    };
-    /**
-     * Error codes that can be sent via an ErrorPackage
-     */
-    enum ErrorCode {
-        /**
-         * The requested file was not found
-         */
-        FILE_NOT_FOUND,
-        /**
-         * A different package type was expected
-         */
-        WRONG_PACKAGE,
-        /**
-         * The sent file could not be stored
-         */
-        FILE_STORAGE
-    };
+/**
+ * @brief Actions that can be performed by the Client
+ */
+enum ClientAction {
+  /**
+   * @var List all the files in the upload directory
+   */
+      LIST,
+  /**
+   * @var Get a file from the server
+   */
+      GET,
+  /**
+   * @var Put a file to the server
+   */
+      PUT,
+  /**
+   * @var Tell the server that you quit
+   */
+      QUIT
+};
+/**
+ * @brief Error codes that can be sent via an ErrorPackage
+ */
+enum ErrorCode {
+  /**
+   * @var The requested file was not found
+   */
+      FILE_NOT_FOUND,
+  /**
+   * @var A different package type was expected
+   */
+      WRONG_PACKAGE,
+  /**
+   * @var The sent file could not be stored
+   */
+      FILE_STORAGE
+};
 }

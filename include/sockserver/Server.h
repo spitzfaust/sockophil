@@ -10,50 +10,53 @@
 #include "sockophil/Package.h"
 
 namespace sockserver {
-    /**
-     * @class Server Server.h "sockclient/Server.h"
-     * @brief Class that is used to interact with the client
-     */
-    class Server : public sockophil::Networking {
-    private:
-        /**
-         * @var port the server listens on
-         */
-        unsigned short port;
-        /**
-         * @var socket_descriptor the server listens on
-         */
-        int socket_descriptor;
-        /**
-         * @var server_address is the address information of the server
-         */
-        struct sockaddr_in server_address;
-        /**
-         * @var client_address is the address information of the connected client
-         */
-        struct sockaddr_in client_address;
-        std::string target_directory;
+/**
+ * @class Server Server.h "sockclient/Server.h"
+ * @brief Class that is used to interact with the client
+ */
+class Server : public sockophil::Networking {
+ private:
+  /**
+   * @var port the server listens on
+   */
+  unsigned short port;
+  /**
+   * @var socket_descriptor the server listens on
+   */
+  int socket_descriptor;
+  /**
+   * @var server_address is the address information of the server
+   */
+  struct sockaddr_in server_address;
+  /**
+   * @var client_address is the address information of the connected client
+   */
+  struct sockaddr_in client_address;
+  /**
+   * @var target_directory is the directory the server stores files in
+   */
+  std::string target_directory;
 
-        void create_socket();
+  void create_socket();
 
-        void bind_to_socket();
+  void bind_to_socket();
 
-        void listen_on_socket();
+  void listen_on_socket();
 
-        void close_socket();
+  void close_socket();
 
-        void store_file(int accepted_socket);
+  void store_file(int accepted_socket);
 
-        void return_file(int accepted_socket, std::string filename);
+  void return_file(int accepted_socket, std::string filename);
 
-        std::vector<std::string> dir_list() const;
+  std::vector<std::string> dir_list() const;
 
-    public:
-        Server(unsigned short port, std::string target_dir);
+ public:
+  Server(unsigned short port, std::string target_dir);
 
-        ~Server();
+  ~Server();
 
-        void run();
-    };
+  void run();
+};
 
 }
