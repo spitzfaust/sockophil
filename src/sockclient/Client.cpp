@@ -90,7 +90,7 @@ namespace sockclient {
     }
 
     void Client::request_a_list() {
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::LIST));
+        this->send_request(std::make_shared<sockophil::ActionPackage>(sockophil::LIST));
         auto pkg = this->receive_response();
         if(pkg->get_type() == sockophil::LIST_PACKAGE) {
             auto list_pkg = std::static_pointer_cast<sockophil::ListPackage>(pkg);
@@ -101,7 +101,7 @@ namespace sockclient {
     }
 
     void Client::bid_server_farewell() {
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::QUIT));
+        this->send_request(std::make_shared<sockophil::ActionPackage>(sockophil::QUIT));
         this->menu->render_success("Goodbye!");
 
     }
@@ -118,7 +118,7 @@ namespace sockclient {
                           [&content](const char c){
                               content.push_back(c);
                           });
-            this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::PUT));
+            this->send_request(std::make_shared<sockophil::ActionPackage>(sockophil::PUT));
             this->send_data(std::make_shared<sockophil::DataPackage>(content, filename));
             received_pkg = this->receive_package(this->socket_descriptor);
             if(received_pkg->get_type() == sockophil::SUCCESS_PACKAGE) {
@@ -138,7 +138,7 @@ namespace sockclient {
     }
 
     void Client::download_a_file(std::string filename) {
-        this->send_request(std::make_shared<sockophil::RequestPackage>(sockophil::GET, filename));
+        this->send_request(std::make_shared<sockophil::ActionPackage>(sockophil::GET, filename));
         auto received_pkg = this->receive_response();
         if(received_pkg->get_type() == sockophil::DATA_PACKAGE) {
             auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
@@ -158,7 +158,7 @@ namespace sockclient {
         }
     }
 
-    void Client::send_request(const std::shared_ptr<sockophil::RequestPackage> package) const {
+    void Client::send_request(const std::shared_ptr<sockophil::ActionPackage> package) const {
         this->send_to_server(package);
     }
 

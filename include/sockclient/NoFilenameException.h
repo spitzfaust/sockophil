@@ -8,6 +8,10 @@
 
 
 namespace sockclient {
+    /**
+     * @class NoFilenameException NoFilenameException.h "sockclient/NoFilenameException.h"
+     * @brief Exception is thrown if a filename should be given
+     */
     class NoFilenameException : public std::exception {
     public:
         NoFilenameException();

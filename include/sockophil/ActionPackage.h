@@ -11,7 +11,11 @@
 #include "sockophil/Protocol.h"
 
 namespace sockophil {
-    class RequestPackage : public Package {
+    /**
+     * @class ActionPackage ActionPackage.h "sockophil/ActionPackage.h"
+     * @brief Package that is sent from the Client to the Server to request some action
+     */
+    class ActionPackage : public Package {
         /**
          * @var action to perform
          */
@@ -22,11 +26,10 @@ namespace sockophil {
         std::string filename;
 
     public:
-        RequestPackage() = default;
+        /* need a default constructor for Cereal to work */
+        ActionPackage() = default;
 
-        RequestPackage(sockophil::ClientAction action, std::string filename);
-
-        RequestPackage(sockophil::ClientAction action);
+        ActionPackage(sockophil::ClientAction action, std::string filename = "");
 
         std::string get_filename() const noexcept;
 
@@ -38,5 +41,6 @@ namespace sockophil {
         void serialize(Archive &ar);
     };
 }
-CEREAL_REGISTER_TYPE(sockophil::RequestPackage);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(sockophil::Package, sockophil::RequestPackage)
+/* Register the serialisation type */
+CEREAL_REGISTER_TYPE(sockophil::ActionPackage);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(sockophil::Package, sockophil::ActionPackage)

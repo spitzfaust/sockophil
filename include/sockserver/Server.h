@@ -10,11 +10,27 @@
 #include "sockophil/Package.h"
 
 namespace sockserver {
+    /**
+     * @class Server Server.h "sockclient/Server.h"
+     * @brief Class that is used to interact with the client
+     */
     class Server : public sockophil::Networking {
     private:
+        /**
+         * @var port the server listens on
+         */
         unsigned short port;
+        /**
+         * @var socket_descriptor the server listens on
+         */
         int socket_descriptor;
+        /**
+         * @var server_address is the address information of the server
+         */
         struct sockaddr_in server_address;
+        /**
+         * @var client_address is the address information of the connected client
+         */
         struct sockaddr_in client_address;
         std::string target_directory;
 

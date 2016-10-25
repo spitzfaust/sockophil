@@ -10,7 +10,7 @@
 namespace sockophil {
     /**
      * @class ErrnoException ErrnoException.h "sockophil/ErrnoException.h"
-     * @brief Class that inherits from std::exception and is used as parent for C errors with errno set
+     * @brief This exception class is used as parent for C error exceptions with errno set.
      */
     class ErrnoException : public std::exception {
     protected:

@@ -7,6 +7,10 @@
 #include <string>
 
 namespace sockophil {
+    /**
+     * @class Package Package.h "sockophil/Package.h"
+     * @brief This is the parent package interface for all the package types.
+     */
     class Package {
     public:
         virtual ~Package() = 0;

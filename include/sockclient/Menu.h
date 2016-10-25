@@ -17,7 +17,7 @@ namespace sockclient {
     class Menu {
         /**
          * @var  connected_on Contains a string that describes the connection. (e.g. 127.0.0.1:1337)
-         * */
+         */
         std::string connected_on;
         /**
          * @var current_directory Holds the path of the current directory (path the program was started from).
@@ -33,7 +33,6 @@ namespace sockclient {
         int terminal_width;
         /**
          * @var terminal_height Height of the terminal
-
          */
         int terminal_height;
         void render_centered_msg(const std::string& message, const char filling, const int color) const noexcept;

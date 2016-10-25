@@ -9,7 +9,7 @@
 namespace sockclient {
     /**
      * @class CurrentDirectoryException CurrentDirectoryException.h "sockclient/CurrentDirectoryException.h"
-     * @brief Is throwen if current directory can not be resolved
+     * @brief Is thrown if current directory can not be resolved
      */
     class CurrentDirectoryException : public sockophil::ErrnoException {
     public:

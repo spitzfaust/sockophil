@@ -11,13 +11,13 @@
 #include "sockclient/Menu.h"
 #include "sockophil/Package.h"
 #include "sockophil/ListPackage.h"
-#include "sockophil/RequestPackage.h"
+#include "sockophil/ActionPackage.h"
 #include "sockophil/DataPackage.h"
 
 namespace sockclient {
 
     /**
-     * @class Client client.h "sockclient/client.h"
+     * @class Client Client.h "sockclient/Client.h"
      * @brief Class that is used to interact with the server
      */
     class Client : public sockophil::Networking {
@@ -57,7 +57,7 @@ namespace sockclient {
         void upload_a_file(std::string filepath);
         void bid_server_farewell();
         void send_to_server(const std::shared_ptr<sockophil::Package> data) const;
-        void send_request(const std::shared_ptr<sockophil::RequestPackage> package) const;
+        void send_request(const std::shared_ptr<sockophil::ActionPackage> package) const;
         void send_data(const std::shared_ptr<sockophil::DataPackage> package) const;
         std::shared_ptr<sockophil::Package> receive_response() const;
 

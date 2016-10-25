@@ -20,11 +20,6 @@ namespace sockclient {
         }
 
     }
-    /**
-     * Consturctor that sets the member vars by calling the main constructor
-     * @param action is the action that should be executed
-     */
-    ClientSelection::ClientSelection(sockophil::ClientAction action) : ClientSelection(action, "") {}
 
     /**
      * Get the action

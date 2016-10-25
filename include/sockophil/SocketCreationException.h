@@ -9,7 +9,7 @@
 namespace sockophil {
     /**
      * @class SocketCreationException SocketCreationException.h "sockclient/SocketCreationException.h"
-     * @brief Is throwen if the creation of the socket was not successful
+     * @brief Is thrown if the creation of the socket was not successful
      */
     class SocketCreationException : public sockophil::ErrnoException {
     public:

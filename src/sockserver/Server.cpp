@@ -25,7 +25,7 @@
 #include "sockserver/SocketAcceptException.h"
 #include "sockophil/Package.h"
 #include "sockophil/DataPackage.h"
-#include "sockophil/RequestPackage.h"
+#include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
 #include "sockophil/Constants.h"
 
@@ -90,8 +90,8 @@ namespace sockserver {
 
             auto received_pkg = this->receive_package(accepted_socket);
             std::cout << received_pkg->get_type() << std::endl;
-            if(received_pkg->get_type() == sockophil::REQUEST_PACKAGE) {
-                switch(std::static_pointer_cast<sockophil::RequestPackage>(received_pkg)->get_action()) {
+            if(received_pkg->get_type() == sockophil::ACTION_PACKAGE) {
+                switch(std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()) {
                     case sockophil::LIST:
                         this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->dir_list()));
                         break;
@@ -100,7 +100,7 @@ namespace sockserver {
                         break;
                     case sockophil::GET:
                         this->return_file(accepted_socket,
-                                          std::static_pointer_cast<sockophil::RequestPackage>(received_pkg)
+                                          std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)
                                                   ->get_filename());
                         break;
                     case sockophil::QUIT:
