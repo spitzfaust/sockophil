@@ -51,4 +51,9 @@ const std::string ERROR_PACKAGE = "ERROR_PACKAGE";
  */
 const std::string SUCCESS_PACKAGE = "SUCCESS_PACKAGE";
 
+/**
+ * @var MIN_NUMBER_THREADS is the minimum number of threads in the server threadpool
+ */
+const unsigned int MIN_NUMBER_THREADS = 4;
+
 }

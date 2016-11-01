@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-
 #include <memory>
 #include "sockophil/ErrnoExceptions.h"
 #include "sockclient/Client.h"
