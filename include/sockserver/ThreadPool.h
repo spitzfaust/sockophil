@@ -16,7 +16,7 @@
 namespace sockserver {
 class ThreadPool {
   std::vector<std::thread> pool;
-  std::queue<std::function<void(const std::condition_variable &, const std::atomic_bool &)>>
+  std::queue<std::function<void(const std::atomic_bool &)>>
       tasks;
   std::vector<std::thread::id> idle_workers;
   std::vector<std::thread::id> workers_to_kill;
@@ -32,6 +32,6 @@ class ThreadPool {
  public:
   ThreadPool();
   ~ThreadPool();
-  void schedule(const std::function<void(const std::condition_variable &, const std::atomic_bool &)> &task);
+  void schedule(const std::function<void(const std::atomic_bool &)> &task);
 };
 }

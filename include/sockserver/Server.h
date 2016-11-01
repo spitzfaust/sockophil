@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include "sockophil/Networking.h"
 #include "sockophil/Package.h"
+#include "sockserver/ThreadPool.h"
 
 namespace sockserver {
 /**
@@ -32,6 +33,14 @@ class Server : public sockophil::Networking {
    * @var target_directory is the directory the server stores files in
    */
   std::string target_directory;
+  /**
+   * @var pool is the ThreadPool that is used by the Server
+   */
+  std::unique_ptr<ThreadPool> pool;
+  /**
+   * @var mut is the mutex that is used to sync the tasks
+   */
+  std::mutex mut;
 
   void create_socket();
 

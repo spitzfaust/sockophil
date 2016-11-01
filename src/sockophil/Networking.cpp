@@ -32,8 +32,10 @@ void Networking::send_package(int socket_descriptor, const std::shared_ptr<Packa
   std::string data_size = SIZE_DELIM + std::to_string(data.size()) + SIZE_DELIM;
   /* fill the header up with 0's to get to the fixed header size */
   data_size = data_size.insert(1, HEADER_SIZE - data_size.size(), '0');
+
   /* send the header to the server */
   send(socket_descriptor, data_size.c_str(), data_size.size(), 0);
+
   /* send the package in BUF sized blocks */
   for (unsigned i = 0; i < data.length(); i += BUF) {
     auto data_part = data.substr(i, BUF);

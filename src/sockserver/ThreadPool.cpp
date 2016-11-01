@@ -31,7 +31,7 @@ void ThreadPool::init_pool() {
   }
 }
 
-void ThreadPool::schedule(const std::function<void(const std::condition_variable &, const std::atomic_bool &)> &task) {
+void ThreadPool::schedule(const std::function<void(const std::atomic_bool &)> &task) {
 
   ++this->task_count;
 
@@ -65,7 +65,7 @@ void ThreadPool::spawn_thread() {
       this->idle_workers.push_back(id);
     }
     while (true) {
-      std::function<void(const std::condition_variable &, const std::atomic_bool &)> task;
+      std::function<void(const std::atomic_bool &)> task;
       {
         std::unique_lock<std::mutex> lock(this->mut);
         this->cond.wait(lock, [this, id]() -> bool {
@@ -104,7 +104,7 @@ void ThreadPool::spawn_thread() {
         );
         ++this->num_running_threads;
       }
-      task(this->cond, this->stop);
+      task(this->stop);
       {
         std::unique_lock<std::mutex> lock(this->mut);
         --this->num_running_threads;
@@ -115,5 +115,4 @@ void ThreadPool::spawn_thread() {
   });
   ++this->num_threads;
 }
-
 }
