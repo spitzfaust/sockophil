@@ -43,13 +43,13 @@ void ThreadPool::schedule(const std::function<void(const std::atomic_bool &)> &t
     }
   }
   {
-    std::unique_lock<std::mutex> lock(this->mut);
+    std::lock_guard<std::mutex> lock(this->mut);
     this->tasks.push(task);
   }
   this->cond.notify_one();
   if ((this->num_threads - this->num_running_threads) > 2 * this->min_threads) {
     {
-      std::unique_lock<std::mutex> lock(this->mut);
+      std::lock_guard<std::mutex> lock(this->mut);
       this->workers_to_kill = std::vector<std::thread::id>(this->idle_workers.begin(),
                                                            this->idle_workers.begin() + this->min_threads);
     }
@@ -61,7 +61,7 @@ void ThreadPool::spawn_thread() {
   this->pool.emplace_back([this]() {
     auto id = std::this_thread::get_id();
     {
-      std::unique_lock<std::mutex> lock(this->mut);
+      std::lock_guard<std::mutex> lock(this->mut);
       this->idle_workers.push_back(id);
     }
     while (true) {
@@ -106,7 +106,7 @@ void ThreadPool::spawn_thread() {
       }
       task(this->stop);
       {
-        std::unique_lock<std::mutex> lock(this->mut);
+        std::lock_guard<std::mutex> lock(this->mut);
         --this->num_running_threads;
         --this->task_count;
         this->idle_workers.push_back(id);

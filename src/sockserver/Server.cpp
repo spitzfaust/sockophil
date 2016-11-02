@@ -183,21 +183,22 @@ void Server::store_file(int accepted_socket) {
     auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
     /* file to write to */
     std::ofstream output_file;
-    /* try to open the file */
-    output_file.open(this->target_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
-    /* check if file could be opened */
-    if (output_file.is_open()) {
-      /* write to the file and create SuccessPackage */
-      {
-        std::lock_guard<std::mutex> lock(this->mut);
+    {
+      std::lock_guard<std::mutex> lock(this->mut);
+      /* try to open the file */
+      output_file.open(this->target_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
+      /* check if file could be opened */
+      if (output_file.is_open()) {
+        /* write to the file and create SuccessPackage */
+
         output_file.write((char *) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+        response_package = std::make_shared<sockophil::SuccessPackage>();
+      } else {
+        /* file could not be stored */
+        response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_STORAGE);
       }
-      response_package = std::make_shared<sockophil::SuccessPackage>();
-    } else {
-      /* file could not be stored */
-      response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_STORAGE);
+      output_file.close();
     }
-    output_file.close();
   } else {
     /* was not the expected DataPackage */
     response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::WRONG_PACKAGE);
@@ -218,24 +219,27 @@ void Server::return_file(int accepted_socket, std::string filename) {
   std::vector<uint8_t> file_data;
   /* file to read from */
   std::ifstream in_file;
-  /* try to open the file in binary read mode */
-  in_file.open(filepath, std::ios::in | std::ios::binary);
-  /* check if file could be opened */
-  if (in_file.is_open()) {
-    {
-      std::lock_guard<std::mutex> lock(this->mut);
-      /* read the whole file to the vector */
-      std::for_each(std::istreambuf_iterator<char>(in_file),
-                    std::istreambuf_iterator<char>(),
-                    [&file_data](const char c) {
-                      file_data.push_back(c);
-                    });
+  {
+    std::lock_guard<std::mutex> lock(this->mut);
+    /* try to open the file in binary read mode */
+    in_file.open(filepath, std::ios::in | std::ios::binary);
+    /* check if file could be opened */
+    if (in_file.is_open()) {
+
+        /* read the whole file to the vector */
+        std::for_each(std::istreambuf_iterator<char>(in_file),
+                      std::istreambuf_iterator<char>(),
+                      [&file_data](const char c) {
+                        file_data.push_back(c);
+                      });
+
+      /* make a DataPackage as response */
+      response_package = std::make_shared<sockophil::DataPackage>(file_data, filename);
+    } else {
+      /* the requested file doesn't exist */
+      response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_NOT_FOUND);
     }
-    /* make a DataPackage as response */
-    response_package = std::make_shared<sockophil::DataPackage>(file_data, filename);
-  } else {
-    /* the requested file doesn't exist */
-    response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_NOT_FOUND);
+    in_file.close();
   }
   /* send the response */
   this->send_package(accepted_socket, response_package);

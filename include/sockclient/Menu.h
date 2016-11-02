@@ -28,27 +28,12 @@ class Menu {
    * @var first_run Is set true in ctor and set false after welcome message has been printed to the screen.
    */
   bool first_run;
-  /**
-   * @var terminal_width Width of the terminal.
-   */
-  int terminal_width;
-  /**
-   * @var terminal_height Height of the terminal
-   */
-  int terminal_height;
-
-  void render_centered_msg(const std::string &message, const char filling = ' ',
-                           const int color = rlutil::LIGHTGREEN) const noexcept;
 
   void render_welcome_msg() const noexcept;
 
   void render_action_prompt() const noexcept;
 
   void render_filename_prompt() const noexcept;
-
-  void render_hr(const char filling = ' ', const int color = rlutil::LIGHTGREEN) const noexcept;
-
-  void update_terminal_dimensions() noexcept;
 
   std::string clear_eol() const noexcept;
 
