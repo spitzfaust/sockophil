@@ -14,6 +14,9 @@ namespace sockophil {
  */
 class Networking {
  protected:
+  std::shared_ptr<Package> receive_package(int socket_descriptor,
+                                           const std::function<void(const unsigned long &,
+                                                                    const unsigned long &)> &call) const;
   std::shared_ptr<Package> receive_package(int socket_descriptor) const;
   void send_package(int socket_descriptor, const std::shared_ptr<Package> package) const;
 };

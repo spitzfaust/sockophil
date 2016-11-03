@@ -49,13 +49,16 @@ void Networking::send_package(int socket_descriptor, const std::shared_ptr<Packa
  * @param socket_descriptor is the number of the socket
  * @return a received package
  */
-std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) const {
+std::shared_ptr<Package> Networking::receive_package(int socket_descriptor,
+                                                     const std::function<void(const unsigned long &,
+                                                                              const unsigned long &)> &call) const {
   /* stores the read data */
   std::vector<char> incoming;
   /* size of the received data */
   ssize_t size = 0;
   /* size of the package that should be received */
-  long size_of_incoming = 0;
+  unsigned long size_of_incoming = 0;
+  unsigned long total_size = 0;
   /* buffer for the blocks */
   char *buffer = nullptr;
   do {
@@ -84,9 +87,11 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
         ss.get(first_delim);
         if (first_delim == SIZE_DELIM[0]) {
           ss >> size_of_incoming;
+          total_size = size_of_incoming;
         }
         // @todo error handling
       } else {
+        call(incoming.size(), total_size);
         /* receive data until size of incoming is 0 */
         for (unsigned long i = 0; (i < size) && (size_of_incoming > 0); ++i) {
           incoming.push_back(buffer[i]);
@@ -98,6 +103,7 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
 
       /* if everything is received */
       if (size_of_incoming == 0) {
+        call(incoming.size(), total_size);
         /* pointer to store the deserialised Package */
         std::shared_ptr<sockophil::Package> pkg;
         /* create a stringstream from the received data */
@@ -107,8 +113,6 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
           cereal::PortableBinaryInputArchive iarchive(data_stream);
           iarchive(pkg);
         }
-        // @todo check if clear is necasary
-        incoming.clear();
         return pkg;
       }
 
@@ -117,5 +121,9 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
       throw SocketReceiveException(errno);
     }
   } while (true);
+}
+
+std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) const {
+  return this->receive_package(socket_descriptor, [](const unsigned long &current, const unsigned long &total) {});
 }
 }

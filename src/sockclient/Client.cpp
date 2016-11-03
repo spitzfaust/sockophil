@@ -163,7 +163,7 @@ void Client::download_a_file(std::string filename) const {
   /* send a get request with the filename */
   this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::GET, filename));
   /* hopefully receive a DataPackage from the server */
-  auto received_pkg = this->receive_package();
+  auto received_pkg = this->receive_data_package();
   /* check if the received package is a DataPackage */
   if (received_pkg->get_type() == sockophil::DATA_PACKAGE) {
     /* cast the package to a DataPackage */
@@ -220,5 +220,12 @@ void Client::connect_to_socket() {
 std::shared_ptr<sockophil::Package> Client::receive_package() const {
   /* call the function of the parent class */
   return sockophil::Networking::receive_package(this->socket_descriptor);
+}
+
+std::shared_ptr<sockophil::Package> Client::receive_data_package() const {
+  /* call the function of the parent class */
+  return sockophil::Networking::receive_package(this->socket_descriptor, [this](const unsigned long &current, const unsigned long &total){
+    this->menu->render_progress(current, total);
+  });
 }
 }

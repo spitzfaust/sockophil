@@ -171,27 +171,32 @@ std::vector<std::string> Server::dir_list() const {
 /**
  * @brief Store a received file in the upload directory
  * @param accepted_socket is the socket to listen for the data
+ * @todo don't read everything into memory
  */
 void Server::store_file(int accepted_socket) {
-  /* try to receive a DataPackage */
-  auto received_pkg = this->receive_package(accepted_socket);
+  bool file_opened = false;
   /* Package for the response */
   std::shared_ptr<sockophil::Package> response_package = nullptr;
+  std::shared_ptr<sockophil::DataPackage> data_package = nullptr;
+  /* try to receive a DataPackage */
+  auto received_pkg = this->receive_package(accepted_socket);
   /* should be a DataPackage */
   if (received_pkg->get_type() == sockophil::DATA_PACKAGE) {
     /* cast to a DataPackage */
-    auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
+    data_package = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
     /* file to write to */
     std::ofstream output_file;
+    this->add_file_mutex(data_package->get_filename());
     {
-      std::lock_guard<std::mutex> lock(this->mut);
+      std::lock_guard<std::mutex> lock(*this->file_muts[data_package->get_filename()]);
       /* try to open the file */
-      output_file.open(this->target_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
+      output_file.open(this->target_directory + data_package->get_filename(), std::ios::out | std::ios::binary);
       /* check if file could be opened */
-      if (output_file.is_open()) {
+      file_opened = output_file.is_open();
+      if (file_opened) {
         /* write to the file and create SuccessPackage */
 
-        output_file.write((char *) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+        output_file.write((char *) data_package->get_data_raw().data(), data_package->get_data_raw().size());
         response_package = std::make_shared<sockophil::SuccessPackage>();
       } else {
         /* file could not be stored */
@@ -205,34 +210,39 @@ void Server::store_file(int accepted_socket) {
   }
   /* send the response to the client */
   this->send_package(accepted_socket, response_package);
+  if(!file_opened) {
+    this->remove_file_mutex(data_package->get_filename());
+  }
 }
 
 /**
  * @brief Send a requested file to the client
  * @param accepted_socket is the socket that is used to communicate over
  * @param filename is the requested file
+ * @todo don't read everything into memory
  */
 void Server::return_file(int accepted_socket, std::string filename) {
+  bool file_opened = false;
   std::shared_ptr<sockophil::Package> response_package = nullptr;
   std::string filepath = this->target_directory + filename;
   /* data of the file */
   std::vector<uint8_t> file_data;
   /* file to read from */
   std::ifstream in_file;
+  this->add_file_mutex(filename);
   {
-    std::lock_guard<std::mutex> lock(this->mut);
+    std::lock_guard<std::mutex> lock(*this->file_muts[filename]);
     /* try to open the file in binary read mode */
     in_file.open(filepath, std::ios::in | std::ios::binary);
     /* check if file could be opened */
-    if (in_file.is_open()) {
-
-        /* read the whole file to the vector */
-        std::for_each(std::istreambuf_iterator<char>(in_file),
-                      std::istreambuf_iterator<char>(),
-                      [&file_data](const char c) {
-                        file_data.push_back(c);
-                      });
-
+    file_opened = in_file.is_open();
+    if (file_opened) {
+      /* read the whole file to the vector */
+      std::for_each(std::istreambuf_iterator<char>(in_file),
+                    std::istreambuf_iterator<char>(),
+                    [&file_data](const char c) {
+                      file_data.push_back(c);
+                    });
       /* make a DataPackage as response */
       response_package = std::make_shared<sockophil::DataPackage>(file_data, filename);
     } else {
@@ -241,8 +251,27 @@ void Server::return_file(int accepted_socket, std::string filename) {
     }
     in_file.close();
   }
+  if(!file_opened) {
+    this->remove_file_mutex(filename);
+  }
   /* send the response */
   this->send_package(accepted_socket, response_package);
+}
+
+void Server::add_file_mutex(std::string filename) {
+  {
+    std::lock_guard<std::mutex> lock(this->mut);
+    if (this->file_muts.find(filename) == this->file_muts.end()) {
+      file_muts.emplace(std::make_pair(filename, std::make_unique<std::mutex>()));
+    }
+  }
+}
+
+void Server::remove_file_mutex(std::string filename) {
+  {
+    std::lock_guard<std::mutex> lock(this->mut);
+    file_muts.erase(filename);
+  }
 }
 
 }

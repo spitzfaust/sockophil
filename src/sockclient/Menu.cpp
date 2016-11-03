@@ -173,8 +173,8 @@ void Menu::render_list_response(std::vector<std::string> list) const noexcept {
       std::cout << "|  " << item << std::endl;
     }
   }
-  rlutil::resetColor();
   std::cout << "-" << std::endl;
+  rlutil::resetColor();
 }
 
 /**
@@ -241,6 +241,25 @@ void Menu::render_success(const std::string &success_msg) const noexcept {
   std::cout << "*" << std::endl;
   std::cout << success_msg << std::endl;
   std::cout << "*" << std::endl;
+  rlutil::resetColor();
+}
+
+void Menu::render_progress(const unsigned long &current, const unsigned long &total) const noexcept {
+  int percentage = 0;
+  rlutil::setColor(rlutil::YELLOW);
+  if(total > 0) {
+    percentage = (int)((double) current / (double) total * 100.0);
+    std::string percentage_str = std::to_string(percentage) + "%";
+    std::cout << "\r";
+    for (int i = 0,j = 0; i <= percentage && j <= 10; i += 10, ++j) {
+      std::cout << "#";
+    }
+    std::cout << " " << percentage_str;
+    if(percentage == 100) {
+      std::cout << std::endl;
+    }
+  }
+
   rlutil::resetColor();
 }
 }
