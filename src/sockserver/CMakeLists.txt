@@ -1,6 +1,6 @@
 project(sockserver)
 set(SOURCE_FILES Server.cpp ThreadPool.cpp)
 add_library(sockserver_lib ${SOURCE_FILES})
-target_link_libraries(sockserver_lib sockophil_lib)
+target_link_libraries(sockserver_lib sockophil_lib ldap lber)
 add_executable(sockserver sockserver.cpp)
 target_link_libraries(sockserver docopt_s sockserver_lib)
