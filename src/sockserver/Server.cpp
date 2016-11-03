@@ -23,6 +23,12 @@
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
 #include "sockophil/Constants.h"
+#include "ldap.h"
+#include <termios.h>
+#include <unistd.h>
+
+
+
 
 namespace sockserver {
 
@@ -243,6 +249,80 @@ void Server::return_file(int accepted_socket, std::string filename) {
   }
   /* send the response */
   this->send_package(accepted_socket, response_package);
+}
+
+bool LDAP_login(std::string username, std::string password){
+  LDAP *ld, *ld2;           /* ldap resources */
+  LDAPMessage *result, *e;  /* LPAD results */
+
+  int rc = 0;            /* variables for bind and */
+
+  char *attribs[3];        /* attribute array for search */
+  attribs[0] = strdup("uid");        /* return uid and cn of entries */
+  attribs[1] = strdup("cn");
+  attribs[2] = NULL;        /* array must be NULL terminated */
+
+  if ((ld = ldap_init(sockophil::HOST,sockophil::PORT)) == NULL){
+    perror("LDAP init failed");
+    return false;
+  }
+
+  std::cout << "Connected to LDAP server " <<  sockophil::HOST << "on Port " << sockophil::PORT << std::endl;
+
+  /* first we bind anonymously */
+  rc = ldap_simple_bind_s(ld, sockophil::BIND_USER, sockophil::BIND_PW);
+  if(rc == LDAP_SUCCESS){
+    std::cout << "Bind successful" << std::endl;
+  }
+
+  std::stringstream ss;
+  ss << "(uid=" << username << "*)";
+
+  rc = ldap_search_s(ld, sockophil::SEARCHBASE, sockophil::SCOPE, ss.str().c_str(), attribs, 0, &result );
+  if(rc != LDAP_SUCCESS){
+    std::cout << "LDAP search error: " << ldap_err2string(rc) << std::endl;
+    return false;
+  }
+  int nrOfRecords = ldap_count_entries(ld, result);
+
+  if (nrOfRecords > 0){
+    struct termios term, term_orig;
+    tcgetattr(STDERR_FILENO, &term);
+    term_orig = term;
+    term.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
+
+    rc = 0;
+    e = ldap_first_entry(ld, result);
+    char * dn;
+    if ((dn = ldap_get_dn( ld, e )) != NULL ) {
+      std::cout << "dn: " << dn << std::endl;
+      /* rebind */
+      ld2 = ldap_init(sockophil::HOST, sockophil::PORT);
+      rc = ldap_simple_bind_s(ld2, dn, password.c_str());
+      std::cout << rc << std::endl;
+      if (rc != 0) {
+        std::cout << "Failed!" << std::endl;
+      } else {
+        std::cout << "Works!" << std::endl;
+        ldap_unbind(ld2);
+      }
+      ldap_memfree(dn);
+    }
+  } else {
+    std::cout << "User not found" << std::endl;
+  }
+  /* free memory used for result */
+  ldap_msgfree(result);
+  free(attribs[0]);
+  free(attribs[1]);
+  std::cout << "LDAP search done!" << std::endl;
+
+  ldap_unbind(ld);
+  return true;
 }
 
 }

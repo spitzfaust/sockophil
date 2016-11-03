@@ -56,4 +56,12 @@ const std::string SUCCESS_PACKAGE = "SUCCESS_PACKAGE";
  */
 const unsigned int MIN_NUMBER_THREADS = 4;
 
+const char* HOST = "ldap.technikum-wien.at";
+const int PORT = 389;
+const char* SEARCHBASE = "dc=technikum-wien,dc=at";
+const char* SCOPE = "LDAP_SCOPE_SUBTREE";
+const char* FILTER = "(uid=if15b029*)";
+const char* BIND_USER = NULL;        /* anonymous bind with user and pw NULL */
+const char* BIND_PW = NULL;
+
 }
