@@ -6,7 +6,7 @@
 #pragma once
 
 #include "sockophil/Package.h"
-#include "sockophil/DataPackage.h"
+#include "sockophil/FileInfoPackage.h"
 #include "sockophil/ListPackage.h"
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"

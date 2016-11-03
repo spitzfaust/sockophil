@@ -19,7 +19,7 @@
 #include "sockophil/ErrnoExceptions.h"
 #include "sockophil/ListPackage.h"
 #include "sockophil/Package.h"
-#include "sockophil/DataPackage.h"
+#include "sockophil/FileInfoPackage.h"
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
 #include "sockophil/Constants.h"
@@ -95,7 +95,6 @@ void Server::listen_on_socket() {
       this->pool->schedule([this, accepted_socket](const std::atomic_bool &stop) {
         while (true) {
           if (stop) {
-            /** @todo maybe msg to client to inform about shutdown */
             close(accepted_socket);
             return;
           }
@@ -171,19 +170,18 @@ std::vector<std::string> Server::dir_list() const {
 /**
  * @brief Store a received file in the upload directory
  * @param accepted_socket is the socket to listen for the data
- * @todo don't read everything into memory
  */
 void Server::store_file(int accepted_socket) {
   bool file_opened = false;
   /* Package for the response */
   std::shared_ptr<sockophil::Package> response_package = nullptr;
-  std::shared_ptr<sockophil::DataPackage> data_package = nullptr;
-  /* try to receive a DataPackage */
+  std::shared_ptr<sockophil::FileInfoPackage> data_package = nullptr;
+  /* try to receive a FileInfoPackage */
   auto received_pkg = this->receive_package(accepted_socket);
-  /* should be a DataPackage */
-  if (received_pkg->get_type() == sockophil::DATA_PACKAGE) {
-    /* cast to a DataPackage */
-    data_package = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
+  /* should be a FileInfoPackage */
+  if (received_pkg->get_type() == sockophil::FILE_INFO_PACKAGE) {
+    /* cast to a FileInfoPackage */
+    data_package = std::static_pointer_cast<sockophil::FileInfoPackage>(received_pkg);
     /* file to write to */
     std::ofstream output_file;
     this->add_file_mutex(data_package->get_filename());
@@ -195,8 +193,7 @@ void Server::store_file(int accepted_socket) {
       file_opened = output_file.is_open();
       if (file_opened) {
         /* write to the file and create SuccessPackage */
-
-        output_file.write((char *) data_package->get_data_raw().data(), data_package->get_data_raw().size());
+        this->socket_store_file(accepted_socket, output_file);
         response_package = std::make_shared<sockophil::SuccessPackage>();
       } else {
         /* file could not be stored */
@@ -205,7 +202,7 @@ void Server::store_file(int accepted_socket) {
       output_file.close();
     }
   } else {
-    /* was not the expected DataPackage */
+    /* was not the expected FileInfoPackage */
     response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::WRONG_PACKAGE);
   }
   /* send the response to the client */
@@ -219,14 +216,11 @@ void Server::store_file(int accepted_socket) {
  * @brief Send a requested file to the client
  * @param accepted_socket is the socket that is used to communicate over
  * @param filename is the requested file
- * @todo don't read everything into memory
  */
 void Server::return_file(int accepted_socket, std::string filename) {
-  bool file_opened = false;
+  bool file_opened;
   std::shared_ptr<sockophil::Package> response_package = nullptr;
   std::string filepath = this->target_directory + filename;
-  /* data of the file */
-  std::vector<uint8_t> file_data;
   /* file to read from */
   std::ifstream in_file;
   this->add_file_mutex(filename);
@@ -237,17 +231,14 @@ void Server::return_file(int accepted_socket, std::string filename) {
     /* check if file could be opened */
     file_opened = in_file.is_open();
     if (file_opened) {
-      /* read the whole file to the vector */
-      std::for_each(std::istreambuf_iterator<char>(in_file),
-                    std::istreambuf_iterator<char>(),
-                    [&file_data](const char c) {
-                      file_data.push_back(c);
-                    });
-      /* make a DataPackage as response */
-      response_package = std::make_shared<sockophil::DataPackage>(file_data, filename);
+      /* make a FileInfoPackage as response */
+      response_package = std::make_shared<sockophil::FileInfoPackage>(filename);
+      this->send_package(accepted_socket, response_package);
+      this->socket_send_file(accepted_socket, in_file);
     } else {
       /* the requested file doesn't exist */
       response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_NOT_FOUND);
+      this->send_package(accepted_socket, response_package);
     }
     in_file.close();
   }
@@ -255,7 +246,6 @@ void Server::return_file(int accepted_socket, std::string filename) {
     this->remove_file_mutex(filename);
   }
   /* send the response */
-  this->send_package(accepted_socket, response_package);
 }
 
 void Server::add_file_mutex(std::string filename) {

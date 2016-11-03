@@ -59,5 +59,7 @@ class Menu {
   void render_error(const std::string &error_msg) const noexcept;
 
   void render_error(sockophil::ClientAction action, sockophil::ErrorCode error_code) const noexcept;
+
+  void render_status_upload() const noexcept;
 };
 }
