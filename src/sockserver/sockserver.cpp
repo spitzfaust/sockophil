@@ -38,7 +38,12 @@ int main(int argc, const char **argv) {
   std::shared_ptr<sockserver::Server> server;
   /* set the title of the terminal window */
 
-  std::cout << server->LDAP_login() << std::endl;
+  std::string username, password;
+  /* User is prompted for Username*/
+  std::cout << "Input Username: " << std::endl;
+  std::cin >> username;
+  /* User is pormpted for password, with hidden input*/
+  password = getpass("Input password: \n");
+  std::cout << server->LDAP_login(username, password)<< std::endl;
 
-  return 0;
 }

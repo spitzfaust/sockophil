@@ -256,13 +256,8 @@ void Server::return_file(int accepted_socket, std::string filename) {
   this->send_package(accepted_socket, response_package);
 }
 
-bool Server::LDAP_login(){
-  std::string username, password;
-  /* User is prompted for Username*/
-  std::cout << "Input Username: " << std::endl;
-  std::cin >> username;
-  /* User is pormpted for password, with hidden input*/
-  password = getpass("Input password: \n");
+bool Server::LDAP_login(std::string username, std::string password){
+
   LDAP *ld, *ld2;           /* ldap resources */
   LDAPMessage *result, *e;  /* LPAD results */
 
@@ -277,14 +272,8 @@ bool Server::LDAP_login(){
     perror("LDAP init failed");
     return false;
   }
-
-  //std::cout << "Connected to LDAP server " <<  LDAP_HOST << "on Port " << LDAP_PORT << std::endl;
-
   /* first we bind anonymously */
   rc = ldap_simple_bind_s(ld, BIND_USER, BIND_PW);
-  if(rc == LDAP_SUCCESS){
-    //std::cout << "Bind successful" << std::endl;
-  }
 
   std::stringstream ss;
   ss << "(uid=" << username << "*)";
@@ -312,11 +301,16 @@ bool Server::LDAP_login(){
       /* rebind */
       ld2 = ldap_init(LDAP_HOST, LDAP_PORT);
       rc = ldap_simple_bind_s(ld2, dn, password.c_str());
+      if (rc != 0) {
+        std::cout << "Username or Password incorrect!" << std::endl;
+        return false;
+      }
       ldap_unbind(ld2);
       ldap_memfree(dn);
     }
   } else {
-    std::cout << "User not found" << std::endl;
+    std::cout << "Username or Password incorrect!" << std::endl;
+    return false;
   }
 
   ldap_unbind(ld);
