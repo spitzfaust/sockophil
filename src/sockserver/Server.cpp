@@ -256,16 +256,22 @@ void Server::return_file(int accepted_socket, std::string filename) {
   this->send_package(accepted_socket, response_package);
 }
 
-bool Server::LDAP_login(std::string username, std::string password){
+bool Server::LDAP_login(){
+  std::string username, password;
+  /* User is prompted for Username*/
+  std::cout << "Input Username: " << std::endl;
+  std::cin >> username;
+  /* User is pormpted for password, with hidden input*/
+  password = getpass("Input password: \n");
   LDAP *ld, *ld2;           /* ldap resources */
   LDAPMessage *result, *e;  /* LPAD results */
 
   int rc = 0;            /* variables for bind and */
 
-  char *attribs[3];        /* attribute array for search */
-  attribs[0] = strdup("uid");        /* return uid and cn of entries */
-  attribs[1] = strdup("cn");
-  attribs[2] = NULL;        /* array must be NULL terminated */
+  char *attributes[3];        /* attribute array for search */
+  attributes[0] = strdup("uid");        /* return uid and cn of entries */
+  attributes[1] = strdup("cn");
+  attributes[2] = NULL;        /* array must be NULL terminated */
 
   if ((ld = ldap_init(LDAP_HOST, LDAP_PORT)) == NULL){
     perror("LDAP init failed");
@@ -277,12 +283,12 @@ bool Server::LDAP_login(std::string username, std::string password){
   /* first we bind anonymously */
   rc = ldap_simple_bind_s(ld, BIND_USER, BIND_PW);
   if(rc == LDAP_SUCCESS){
-    std::cout << "Bind successful" << std::endl;
+    //std::cout << "Bind successful" << std::endl;
   }
 
   std::stringstream ss;
   ss << "(uid=" << username << "*)";
-  rc = ldap_search_s(ld, SEARCHBASE, SCOPE, ss.str().c_str(), attribs, 0, &result );
+  rc = ldap_search_s(ld, SEARCHBASE, SCOPE, ss.str().c_str(), attributes, 0, &result );
   if(rc != LDAP_SUCCESS){
     std::cout << "LDAP search error: " << ldap_err2string(rc) << std::endl;
     return false;
@@ -303,24 +309,15 @@ bool Server::LDAP_login(std::string username, std::string password){
     e = ldap_first_entry(ld, result);
     char * dn;
     if ((dn = ldap_get_dn( ld, e )) != NULL ) {
-      std::cout << "dn: " << dn << std::endl;
       /* rebind */
       ld2 = ldap_init(LDAP_HOST, LDAP_PORT);
       rc = ldap_simple_bind_s(ld2, dn, password.c_str());
-      std::cout << rc << std::endl;
-      if (rc != 0) {
-        std::cout << "Failed!" << std::endl;
-      } else {
-        std::cout << "Works!" << std::endl;
-        ldap_unbind(ld2);
-      }
+      ldap_unbind(ld2);
       ldap_memfree(dn);
     }
   } else {
     std::cout << "User not found" << std::endl;
   }
-  /* free memory used for result */
-  std::cout << "LDAP search done!" << std::endl;
 
   ldap_unbind(ld);
   return true;

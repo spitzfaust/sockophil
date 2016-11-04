@@ -57,7 +57,7 @@ class Server : public sockophil::Networking {
   std::vector<std::string> dir_list() const;
 
  public:
-  bool LDAP_login(std::string username, std::string password);
+  bool LDAP_login();
 
   Server(unsigned short port, std::string target_dir);
 
