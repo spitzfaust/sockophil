@@ -55,13 +55,11 @@ const std::string SUCCESS_PACKAGE = "SUCCESS_PACKAGE";
  * @var MIN_NUMBER_THREADS is the minimum number of threads in the server threadpool
  */
 const unsigned int MIN_NUMBER_THREADS = 4;
-
-const char* HOST = "ldap.technikum-wien.at";
-const int PORT = 389;
+/*
+std::string LDAP_HOST = "ldap.technikum-wien.at";
 const char* SEARCHBASE = "dc=technikum-wien,dc=at";
-const char* SCOPE = "LDAP_SCOPE_SUBTREE";
 const char* FILTER = "(uid=if15b029*)";
-const char* BIND_USER = NULL;        /* anonymous bind with user and pw NULL */
+const char* BIND_USER = NULL;        /* anonymous bind with user and pw NULL *//*
 const char* BIND_PW = NULL;
-
+*/
 }
