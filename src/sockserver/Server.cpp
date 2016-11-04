@@ -272,7 +272,7 @@ bool Server::LDAP_login(std::string username, std::string password){
     return false;
   }
 
-  std::cout << "Connected to LDAP server " <<  LDAP_HOST << "on Port " << LDAP_PORT << std::endl;
+  //std::cout << "Connected to LDAP server " <<  LDAP_HOST << "on Port " << LDAP_PORT << std::endl;
 
   /* first we bind anonymously */
   rc = ldap_simple_bind_s(ld, BIND_USER, BIND_PW);
