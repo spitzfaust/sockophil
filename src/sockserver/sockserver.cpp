@@ -69,21 +69,5 @@ int main(int argc, const char **argv) {
   server->run();
 
   return 0;
-
-  /*
-  int port = 0;
-  std::string dir = "";
-  std::string version = "sockserver 0.1";
-  client pointer that is used later
-  std::shared_ptr<sockserver::Server> server;
-  /set the title of the terminal window
-
-  std::string username, password;
-  /* User is prompted for Username*/
-  std::cout << "Input Username: " << std::endl;
-  std::cin >> username;
-  /* User is prompted for password, with hidden input*/
-  password = getpass("Input password: \n");
-  std::cout << server->LDAP_login(username, password)<< std::endl;
-  */
+  
 }
