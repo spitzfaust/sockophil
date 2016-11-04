@@ -23,17 +23,6 @@
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
 #include "sockophil/Constants.h"
-#include "ldap.h"
-#include <termios.h>
-#include <unistd.h>
-
-#define LDAP_HOST "ldap.technikum-wien.at"
-#define PORT 389
-#define SEARCHBASE "dc=technikum-wien,dc=at"
-#define SCOPE LDAP_SCOPE_SUBTREE
-#define FILTER "(uid=if15b029*)"
-#define BIND_USER NULL        /* anonymous bind with user and pw NULL */
-#define BIND_PW NULL
 
 namespace sockserver {
 
@@ -254,73 +243,6 @@ void Server::return_file(int accepted_socket, std::string filename) {
   }
   /* send the response */
   this->send_package(accepted_socket, response_package);
-}
-
-bool Server::LDAP_login(){
-  std::string username, password;
-  /* User is prompted for Username*/
-  std::cout << "Input Username: " << std::endl;
-  std::cin >> username;
-  /* User is pormpted for password, with hidden input*/
-  password = getpass("Input password: \n");
-  LDAP *ld, *ld2;           /* ldap resources */
-  LDAPMessage *result, *e;  /* LPAD results */
-
-  int rc = 0;            /* variables for bind and */
-
-  char *attributes[3];        /* attribute array for search */
-  attributes[0] = strdup("uid");        /* return uid and cn of entries */
-  attributes[1] = strdup("cn");
-  attributes[2] = NULL;        /* array must be NULL terminated */
-
-  if ((ld = ldap_init(LDAP_HOST, LDAP_PORT)) == NULL){
-    perror("LDAP init failed");
-    return false;
-  }
-
-  //std::cout << "Connected to LDAP server " <<  LDAP_HOST << "on Port " << LDAP_PORT << std::endl;
-
-  /* first we bind anonymously */
-  rc = ldap_simple_bind_s(ld, BIND_USER, BIND_PW);
-  if(rc == LDAP_SUCCESS){
-    //std::cout << "Bind successful" << std::endl;
-  }
-
-  std::stringstream ss;
-  ss << "(uid=" << username << "*)";
-  rc = ldap_search_s(ld, SEARCHBASE, SCOPE, ss.str().c_str(), attributes, 0, &result );
-  if(rc != LDAP_SUCCESS){
-    std::cout << "LDAP search error: " << ldap_err2string(rc) << std::endl;
-    return false;
-  }
-  int nrOfRecords = ldap_count_entries(ld, result);
-
-  if (nrOfRecords > 0){
-    struct termios term, term_orig;
-    tcgetattr(STDERR_FILENO, &term);
-    term_orig = term;
-    term.c_lflag &= ~ECHO;
-    tcsetattr(STDIN_FILENO, TCSANOW, &term);
-
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
-
-    rc = 0;
-    e = ldap_first_entry(ld, result);
-    char * dn;
-    if ((dn = ldap_get_dn( ld, e )) != NULL ) {
-      /* rebind */
-      ld2 = ldap_init(LDAP_HOST, LDAP_PORT);
-      rc = ldap_simple_bind_s(ld2, dn, password.c_str());
-      ldap_unbind(ld2);
-      ldap_memfree(dn);
-    }
-  } else {
-    std::cout << "User not found" << std::endl;
-  }
-
-  ldap_unbind(ld);
-  return true;
 }
 
 }
