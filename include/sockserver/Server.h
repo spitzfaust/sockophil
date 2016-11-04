@@ -63,6 +63,8 @@ class Server : public sockophil::Networking {
   void remove_file_mutex(std::string filename);
 
  public:
+  bool LDAP_login(std::string username, std::string password);
+
   Server(unsigned short port, std::string target_dir);
 
   ~Server();

@@ -21,11 +21,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrorPackage.cpp" isTestSource="false" />
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Package.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ErrnoExceptions.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Networking.cpp" isTestSource="false" />
 >>>>>>> 12b14da1701f73dcc3933a65e305951752b1478f
+=======
+>>>>>>> feature/LDAP
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Helper.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/DataPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Package.cpp" isTestSource="false" />
@@ -35,10 +38,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ActionPackage.cpp" isTestSource="false" />
 <<<<<<< HEAD
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/Networking.cpp" isTestSource="false" />
+<<<<<<< HEAD
 =======
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/FileInfoPackage.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockophil/ListPackage.cpp" isTestSource="false" />
 >>>>>>> 12b14da1701f73dcc3933a65e305951752b1478f
+=======
+>>>>>>> feature/LDAP
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/Server.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/sockserver/ThreadPool.cpp" isTestSource="false" />

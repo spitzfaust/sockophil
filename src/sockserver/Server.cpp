@@ -13,6 +13,7 @@
 #include <fstream>
 #include <condition_variable>
 #include <atomic>
+#include <termios.h>
 #include "sockserver/Server.h"
 #include "sockophil/Helper.h"
 #include "cereal/archives/portable_binary.hpp"
@@ -23,6 +24,15 @@
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
 #include "sockophil/Constants.h"
+
+#include "ldap.h"
+
+#define LDAP_HOST "ldap.technikum-wien.at"
+#define SEARCHBASE "dc=technikum-wien,dc=at"
+#define SCOPE LDAP_SCOPE_SUBTREE
+#define FILTER "(uid=if15b029*)"
+#define BIND_USER NULL
+#define BIND_PW NULL
 
 namespace sockserver {
 
@@ -262,6 +272,67 @@ void Server::remove_file_mutex(std::string filename) {
     std::lock_guard<std::mutex> lock(this->mut);
     file_muts.erase(filename);
   }
+}
+
+bool Server::LDAP_login(std::string username, std::string password){
+
+  LDAP *ld, *ld2;           /* ldap resources */
+  LDAPMessage *result, *e;  /* LPAD results */
+
+  int rc = 0;            /* variables for bind and */
+
+  char *attributes[3];        /* attribute array for search */
+  attributes[0] = strdup("uid");        /* return uid and cn of entries */
+  attributes[1] = strdup("cn");
+  attributes[2] = NULL;        /* array must be NULL terminated */
+
+  if ((ld = ldap_init(LDAP_HOST, LDAP_PORT)) == NULL){
+    perror("LDAP init failed");
+    return false;
+  }
+  /* first we bind anonymously */
+  rc = ldap_simple_bind_s(ld, BIND_USER, BIND_PW);
+
+  std::stringstream ss;
+  ss << "(uid=" << username << "*)";
+  rc = ldap_search_s(ld, SEARCHBASE, SCOPE, ss.str().c_str(), attributes, 0, &result );
+  if(rc != LDAP_SUCCESS){
+    std::cout << "LDAP search error: " << ldap_err2string(rc) << std::endl;
+    return false;
+  }
+  int nrOfRecords = ldap_count_entries(ld, result);
+
+  if (nrOfRecords > 0){
+    struct termios term, term_orig;
+    tcgetattr(STDERR_FILENO, &term);
+    term_orig = term;
+    term.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
+
+    rc = 0;
+    e = ldap_first_entry(ld, result);
+    char * dn;
+    if ((dn = ldap_get_dn( ld, e )) != NULL ) {
+      /* rebind */
+      ld2 = ldap_init(LDAP_HOST, LDAP_PORT);
+      rc = ldap_simple_bind_s(ld2, dn, password.c_str());
+      if (rc != 0) {
+        std::cout << "Username or Password incorrect!" << std::endl;
+        return false;
+      }
+      ldap_unbind(ld2);
+      ldap_memfree(dn);
+    }
+  } else {
+    std::cout << "Username or Password incorrect!" << std::endl;
+    return false;
+  }
+
+  ldap_unbind(ld);
+  return true;
 }
 
 }
