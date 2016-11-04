@@ -12,7 +12,7 @@
 #include "sockophil/Package.h"
 #include "sockophil/ListPackage.h"
 #include "sockophil/ActionPackage.h"
-#include "sockophil/DataPackage.h"
+#include "sockophil/FileInfoPackage.h"
 
 namespace sockclient {
 
@@ -46,10 +46,9 @@ class Client : public sockophil::Networking {
    */
   std::string current_directory;
   /**
-   * @todo should maybe be unique_ptr
    * @var menu is used to interact with the user and get orders
    */
-  std::shared_ptr<Menu> menu;
+  std::unique_ptr<Menu> menu;
   void create_socket();
   void connect_to_socket();
   void request_a_list() const;

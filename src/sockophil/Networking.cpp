@@ -4,8 +4,10 @@
 
 #include <sys/socket.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <cerrno>
+#include <netinet/in.h>
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/ErrnoExceptions.h"
 #include "sockophil/Constants.h"
@@ -29,12 +31,8 @@ void Networking::send_package(int socket_descriptor, const std::shared_ptr<Packa
   /* get a string from the serialised package */
   std::string data = ss.str();
   /* create the header from the size of the package and delimiters */
-  std::string data_size = SIZE_DELIM + std::to_string(data.size()) + SIZE_DELIM;
-  /* fill the header up with 0's to get to the fixed header size */
-  data_size = data_size.insert(1, HEADER_SIZE - data_size.size(), '0');
-
-  /* send the header to the server */
-  send(socket_descriptor, data_size.c_str(), data_size.size(), 0);
+  auto data_size = data.size();
+  this->send_header(socket_descriptor, data_size);
 
   /* send the package in BUF sized blocks */
   for (unsigned i = 0; i < data.length(); i += BUF) {
@@ -51,47 +49,31 @@ void Networking::send_package(int socket_descriptor, const std::shared_ptr<Packa
  */
 std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) const {
   /* stores the read data */
-  std::vector<char> incoming;
+  std::vector<uint8_t> incoming;
   /* size of the received data */
   ssize_t size = 0;
   /* size of the package that should be received */
-  long size_of_incoming = 0;
+  long size_of_incoming = this->receive_header(socket_descriptor);
+  long total_size = size_of_incoming;
   /* buffer for the blocks */
-  char *buffer = nullptr;
+  uint8_t *buffer = nullptr;
   do {
     /* no header was received */
-    if (size_of_incoming == 0) {
-      /* only get HEADER_SIZE chars from the socket */
-      buffer = new char[HEADER_SIZE];
-      size = recv(socket_descriptor, buffer, HEADER_SIZE, 0);
-    } else if (size_of_incoming > 0 && size_of_incoming < BUF) {
+    if (size_of_incoming > 0 && size_of_incoming < BUF) {
       /* less than BUF size chars are left to read from the socket */
-      buffer = new char[size_of_incoming];
+      buffer = new uint8_t[size_of_incoming];
       size = recv(socket_descriptor, buffer, size_of_incoming, 0);
     } else {
       /* read the full BUF size */
-      buffer = new char[BUF];
+      buffer = new uint8_t[BUF];
       size = recv(socket_descriptor, buffer, BUF, 0);
     }
     /* something was received */
     if (size > 0) {
-      /* receive header first */
-      if (size_of_incoming == 0) {
-        /* storing the size of the incoming data */
-        std::stringstream ss;
-        char first_delim = '\0';
-        ss << buffer;
-        ss.get(first_delim);
-        if (first_delim == SIZE_DELIM[0]) {
-          ss >> size_of_incoming;
-        }
-        // @todo error handling
-      } else {
-        /* receive data until size of incoming is 0 */
-        for (unsigned long i = 0; (i < size) && (size_of_incoming > 0); ++i) {
-          incoming.push_back(buffer[i]);
-          --size_of_incoming;
-        }
+      /* receive data until size of incoming is 0 */
+      for (unsigned long i = 0; (i < size) && (size_of_incoming > 0); ++i) {
+        incoming.push_back(buffer[i]);
+        --size_of_incoming;
       }
       /* don't forget to free memory */
       delete[] buffer;
@@ -107,8 +89,6 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
           cereal::PortableBinaryInputArchive iarchive(data_stream);
           iarchive(pkg);
         }
-        // @todo check if clear is necasary
-        incoming.clear();
         return pkg;
       }
 
@@ -117,5 +97,115 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
       throw SocketReceiveException(errno);
     }
   } while (true);
+}
+
+/**
+ * @brief Send a header (long)
+ * @param socket_descriptor is the number of the socket
+ * @param header is the header that should be sent
+ */
+void Networking::send_header(const int &socket_descriptor, long header) const {
+  header = htonl(header);
+  long *header_ptr = &header;
+  send(socket_descriptor, header_ptr, sizeof(header), 0);
+}
+
+/**
+ * @brief Receive a header (long)
+ * @param socket_descriptor is the number of the socket
+ * @return the header
+ * @throws SocketReceiveException if socket could not be read
+ */
+long Networking::receive_header(const int &socket_descriptor) const {
+  long header = 0;
+  long *header_ptr = &header;
+  if (recv(socket_descriptor, header_ptr, sizeof(header), 0) > 0) {
+    return ntohl(header);
+  } else {
+    /* something went wrong while reading from socket */
+    throw SocketReceiveException(errno);
+  }
+}
+/**
+ * @brief Receive a file in chunks and store it
+ * @param socket_descriptor is the number of the socket
+ * @param output_file is the filestream to write to
+ * @param call is a function that is called after a chunk is received (progress bar)
+ */
+void Networking::socket_store_file(const int &socket_descriptor, std::ofstream &output_file,
+                                   const std::function<void(const long &,
+                                                            const long &)> &call) const {
+  /* size of the file that should be received */
+  long filesize = receive_header(socket_descriptor);
+  /* remaining bytes to read */
+  long remaining = filesize;
+  /* bytes that where already received */
+  long total_received = 0;
+
+  /* run until remaining is 0 */
+  while (remaining > 0) {
+    /* number of bytes that was received */
+    ssize_t size = 0;
+    /* chunk (array) that will be read */
+    uint8_t *chunk = nullptr;
+    /* size of the chunk */
+    long chunk_size = 0;
+    if (remaining > 0 && remaining < BUF) {
+      /* less than BUF size chars are left to read from the socket */
+      chunk_size = remaining;
+      chunk = new uint8_t[remaining];
+    } else {
+      /* read the full BUF size */
+      chunk_size = BUF;
+      chunk = new uint8_t[BUF];
+    }
+    size = recv(socket_descriptor, chunk, chunk_size, 0);
+    if (size > 0) {
+      total_received += chunk_size;
+      call(total_received, filesize);
+      output_file.write((char *) chunk, chunk_size);
+      remaining -= chunk_size;
+    } else {
+      delete[] chunk;
+      /* something went wrong while reading from socket */
+      throw SocketReceiveException(errno);
+    }
+    delete[] chunk;
+  }
+}
+/**
+ * @brief Receive a file in chunks and store it.
+ * @param socket_descriptor is the number of the socket
+ * @param output_file is the filestream to write to
+ */
+void Networking::socket_store_file(const int &socket_descriptor, std::ofstream &output_file) const {
+  /* just call the socket_store_file function with an empty closure */
+  this->socket_store_file(socket_descriptor, output_file, [](const long &current, const long &total) {});
+}
+
+/**
+ * @brief Send a file in chunks over a socket.
+ * @param socket_descriptor is the number of the socket
+ * @param input_file is the filestream that is read from
+ */
+void Networking::socket_send_file(const int &socket_descriptor, std::ifstream &input_file) const {
+  std::streampos filesize = 0;
+  filesize = input_file.tellg();
+  input_file.seekg(0, std::ios::end);
+  filesize = input_file.tellg() - filesize;
+  input_file.clear();
+  input_file.seekg(0, std::ios::beg);
+  if (filesize >= 0) {
+    this->send_header(socket_descriptor, filesize);
+  } else {
+    /** @todo own exception */
+    throw "send file error";
+  }
+  std::array<uint8_t, BUF> buffer;
+  while (input_file.read((char *) buffer.data(), buffer.size())) {
+    send(socket_descriptor, buffer.data(), buffer.size(), 0);
+  }
+  std::streamsize size_read = input_file.gcount();
+  send(socket_descriptor, buffer.data(), size_read, 0);
 }
 }

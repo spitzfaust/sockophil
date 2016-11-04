@@ -15,7 +15,7 @@
 #include "sockophil/Helper.h"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/Constants.h"
-#include "sockophil/DataPackage.h"
+#include "sockophil/FileInfoPackage.h"
 #include "sockophil/ErrnoExceptions.h"
 #include "sockclient/Client.h"
 #include "sockophil/Protocol.h"
@@ -34,7 +34,7 @@ Client::Client(unsigned short port, std::string ip_address) : port(port), ip_add
     throw sockophil::CurrentDirectoryException(errno);
   }
   this->current_directory = sockophil::Helper::add_trailing_slash(current_directory);
-  this->menu = std::make_shared<Menu>(port, ip_address, current_directory);
+  this->menu = std::make_unique<Menu>(port, ip_address, current_directory);
   this->connected = false;
   this->create_socket();
   this->connect_to_socket();
@@ -117,8 +117,6 @@ void Client::bid_server_farewell() const {
 void Client::upload_a_file(std::string filepath) const {
   /* should point to a ErrorPackage or SuccessPackage */
   std::shared_ptr<sockophil::Package> received_pkg = nullptr;
-  /* will hold the content of the file */
-  std::vector<uint8_t> content;
   /* filestream to read from */
   std::ifstream input_file;
   /* read from the file in binary mode */
@@ -126,16 +124,12 @@ void Client::upload_a_file(std::string filepath) const {
   /* check if the file could be opened */
   if (input_file.is_open()) {
     std::string filename = sockophil::Helper::parse_filename(filepath);
-    /* go through the file and push the content into the vector */
-    std::for_each(std::istreambuf_iterator<char>(input_file),
-                  std::istreambuf_iterator<char>(),
-                  [&content](const char c) {
-                    content.push_back(c);
-                  });
     /* send the request to upload the file */
     this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::PUT));
     /* send the actual data */
-    this->send_package(std::make_shared<sockophil::DataPackage>(content, filename));
+    this->send_package(std::make_shared<sockophil::FileInfoPackage>(filename));
+    this->menu->render_status_upload();
+    this->socket_send_file(this->socket_descriptor, input_file);
     /* wait for the success or error message */
     received_pkg = this->receive_package();
     if (received_pkg->get_type() == sockophil::SUCCESS_PACKAGE) {
@@ -162,22 +156,26 @@ void Client::upload_a_file(std::string filepath) const {
 void Client::download_a_file(std::string filename) const {
   /* send a get request with the filename */
   this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::GET, filename));
-  /* hopefully receive a DataPackage from the server */
+  /* hopefully receive a FileInfoPackage from the server */
   auto received_pkg = this->receive_package();
-  /* check if the received package is a DataPackage */
-  if (received_pkg->get_type() == sockophil::DATA_PACKAGE) {
-    /* cast the package to a DataPackage */
-    auto data_pkg = std::static_pointer_cast<sockophil::DataPackage>(received_pkg);
+  /* check if the received package is a FileInfoPackage */
+  if (received_pkg->get_type() == sockophil::FILE_INFO_PACKAGE) {
+    /* cast the package to a FileInfoPackage */
+    auto file_info = std::static_pointer_cast<sockophil::FileInfoPackage>(received_pkg);
     /* write to this file */
     std::ofstream output_file;
     /* open the file in the current path in binary write mode */
-    output_file.open(this->current_directory + data_pkg->get_filename(), std::ios::out | std::ios::binary);
+    output_file.open(this->current_directory + file_info->get_filename(), std::ios::out | std::ios::binary);
     /* check if file could be opened */
     if (output_file.is_open()) {
       /* write the data to the file */
-      output_file.write((char *) data_pkg->get_data_raw().data(), data_pkg->get_data_raw().size());
+      this->socket_store_file(this->socket_descriptor,
+                              output_file,
+                              [this](const unsigned long &current, const unsigned long &total) {
+                                this->menu->render_progress(current, total);
+                              });
       this->menu->render_success(
-          "Successfully downloaded the file " + data_pkg->get_filename() + " to the current folder!");
+          "Successfully downloaded the file " + file_info->get_filename() + " to the current folder!");
     } else {
       this->menu->render_error("Get Error: Could not store the file locally.");
     }

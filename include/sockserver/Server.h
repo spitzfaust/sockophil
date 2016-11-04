@@ -42,6 +42,8 @@ class Server : public sockophil::Networking {
    */
   std::mutex mut;
 
+  std::map<std::string, std::unique_ptr<std::mutex>> file_muts;
+
   void create_socket();
 
   void bind_to_socket();
@@ -55,6 +57,10 @@ class Server : public sockophil::Networking {
   void return_file(int accepted_socket, std::string filename);
 
   std::vector<std::string> dir_list() const;
+
+  void add_file_mutex(std::string filename);
+
+  void remove_file_mutex(std::string filename);
 
  public:
   Server(unsigned short port, std::string target_dir);

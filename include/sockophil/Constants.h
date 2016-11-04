@@ -23,17 +23,9 @@ const unsigned int DEFAULT_PORT = 1337;
  */
 const unsigned int BUF = 1024;
 /**
- * @var HEADER_SIZE is the size of the header (number of digits of an unsigned int + 2 for delim)
+ * @var FILE_INFO_PACKAGE identifies the FileInfoPackage class
  */
-const unsigned short HEADER_SIZE = 22;
-/**
- * @var SIZE_DELIM is used before and after the header
- */
-const std::string SIZE_DELIM = "|";
-/**
- * @var DATA_PACKAGE identifies the DataPackage class
- */
-const std::string DATA_PACKAGE = "DATA_PACKAGE";
+const std::string FILE_INFO_PACKAGE = "FILE_INFO_PACKAGE";
 /**
  * @var ACTION_PACKAGE identifies the ActionPackage class
  */

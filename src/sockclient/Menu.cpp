@@ -24,7 +24,6 @@ Menu::Menu(int port, std::string ip_address, std::string current_directory)
   this->connected_on = ip_address + ":" + std::to_string(port);
 }
 
-
 /**
  * @brief Print a welcome message to the screen. Is only called once on start of the client.
  */
@@ -173,8 +172,8 @@ void Menu::render_list_response(std::vector<std::string> list) const noexcept {
       std::cout << "|  " << item << std::endl;
     }
   }
-  rlutil::resetColor();
   std::cout << "-" << std::endl;
+  rlutil::resetColor();
 }
 
 /**
@@ -241,6 +240,33 @@ void Menu::render_success(const std::string &success_msg) const noexcept {
   std::cout << "*" << std::endl;
   std::cout << success_msg << std::endl;
   std::cout << "*" << std::endl;
+  rlutil::resetColor();
+}
+
+void Menu::render_progress(const unsigned long &current, const unsigned long &total) const noexcept {
+  int percentage = 0;
+  rlutil::setColor(rlutil::YELLOW);
+  if (total > 0) {
+    percentage = (int) ((double) current / (double) total * 100.0);
+    std::string percentage_str = std::to_string(percentage) + "%";
+    rlutil::hidecursor();
+    std::cout << "\r";
+    for (int i = 0, j = 0; i <= percentage && j <= 10; i += 10, ++j) {
+      std::cout << "#";
+    }
+    std::cout << " " << percentage_str;
+    if (percentage == 100) {
+      std::cout << std::endl;
+      rlutil::showcursor();
+    }
+  }
+
+  rlutil::resetColor();
+}
+
+void Menu::render_status_upload() const noexcept {
+  rlutil::setColor(rlutil::YELLOW);
+  std::cout << "Uploading..." << std::endl;
   rlutil::resetColor();
 }
 }
