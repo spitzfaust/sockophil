@@ -30,5 +30,6 @@
 .idea/*.iws
 .idea/tasks.xml
 .idea/workspace.xml
+.idea/sockophil.iml
 bin/
 build/
