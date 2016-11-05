@@ -26,7 +26,11 @@ enum ClientAction {
   /**
    * @var Tell the server that you quit
    */
-      QUIT
+      QUIT,
+  /**
+   * @var Tell the server your login data
+   */
+      LOGIN
 };
 /**
  * @brief Error codes that can be sent via an ErrorPackage

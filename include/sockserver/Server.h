@@ -44,6 +44,8 @@ class Server : public sockophil::Networking {
 
   std::map<std::string, std::unique_ptr<std::mutex>> file_muts;
 
+  std::map<std::string, int> client_logins;
+
   void create_socket();
 
   void bind_to_socket();
@@ -63,6 +65,7 @@ class Server : public sockophil::Networking {
   void remove_file_mutex(std::string filename);
 
  public:
+
   bool LDAP_login(std::string username, std::string password);
 
   Server(unsigned short port, std::string target_dir);

@@ -57,6 +57,7 @@ class Client : public sockophil::Networking {
   void bid_server_farewell() const;
   void send_package(const std::shared_ptr<sockophil::Package> data) const;
   std::shared_ptr<sockophil::Package> receive_package() const;
+  void login_to_server(std::string username, std::string password) const;
 
  public:
   Client(unsigned short port, std::string ip_address);

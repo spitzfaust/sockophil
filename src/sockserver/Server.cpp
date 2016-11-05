@@ -44,6 +44,7 @@ namespace sockserver {
 Server::Server(unsigned short port, std::string target_directory) : port(port) {
   this->pool = std::make_unique<ThreadPool>();
   this->target_directory = sockophil::Helper::add_trailing_slash(target_directory);
+  this->client_logins;
   this->dir_list();
   this->create_socket();
   this->bind_to_socket();
@@ -102,6 +103,9 @@ void Server::listen_on_socket() {
     } else {
       std::cout << "Client connected from " << inet_ntoa(client_address.sin_addr) << ": "
                 << ntohs(client_address.sin_port) << std::endl;
+      /* Bool for to check if client is logged in */
+      bool authorized = false;
+      /* thread begins */
       this->pool->schedule([this, accepted_socket](const std::atomic_bool &stop) {
         while (true) {
           if (stop) {
@@ -111,7 +115,7 @@ void Server::listen_on_socket() {
           /* package that was sent by the client to the server */
           auto received_pkg = this->receive_package(accepted_socket);
           /* a ActionPackage should be received */
-          if (received_pkg->get_type() == sockophil::ACTION_PACKAGE) {
+          if (received_pkg->get_type() == sockophil::ACTION_PACKAGE && authorized) {
             /* check which action should be performed */
             switch (std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()) {
               case sockophil::LIST:
@@ -128,6 +132,31 @@ void Server::listen_on_socket() {
               case sockophil::QUIT:
                 close(accepted_socket);
                 return;
+            }
+          }else if (/* check if map is < 3 */){
+            if(std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action() == sockophil::LOGIN){
+              std::string logindata = std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_filename();
+              std::string username = "";
+              std::string password = "";
+              /* splitting the filname to username and password */
+              bool splitter = false;
+              for(char p : logindata){
+                if(p == '/'){ splitter = true; }
+                if(splitter){
+                  password += p;
+                }else{
+                  username += p;
+                }
+              }
+              if(LDAP_login(username, password)){
+                authorized = true;
+                /* TODO send back correct input input */
+              }else{
+                /* TODO send back incorrect input
+                 * TODO edit map with ip and number of tries
+                 */
+              }
+
             }
           }
         }

@@ -191,6 +191,11 @@ void Client::download_a_file(std::string filename) const {
   }
 }
 
+void Client::login_to_server(std::string username, std::string password){
+  std::string logindata = username + "/" + password;
+  this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::LOGIN, logindata));
+}
+
 /**
  * @brief Send a Package to the server
  * @param package is the Package that should be sent
