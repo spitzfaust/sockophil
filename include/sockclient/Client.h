@@ -54,6 +54,7 @@ class Client : public sockophil::Networking {
   void request_a_list() const;
   void download_a_file(std::string filename) const;
   void upload_a_file(std::string filepath) const;
+  void login_to_server(std::string logindata) const;
   void bid_server_farewell() const;
   void send_package(const std::shared_ptr<sockophil::Package> data) const;
   std::shared_ptr<sockophil::Package> receive_package() const;

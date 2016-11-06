@@ -66,6 +66,9 @@ void Client::run() {
     /* get a selection */
     auto selection = this->menu->selection_prompt();
     switch (selection.get_action()) {
+      case sockophil::LOGIN:
+        this->login_to_server(selection.get_filename());
+        break;
       case sockophil::LIST:
         this->request_a_list();
         break;
@@ -191,8 +194,7 @@ void Client::download_a_file(std::string filename) const {
   }
 }
 
-void Client::login_to_server(std::string username, std::string password){
-  std::string logindata = username + "/" + password;
+void Client::login_to_server(std::string logindata) const{
   this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::LOGIN, logindata));
 }
 

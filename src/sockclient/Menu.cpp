@@ -66,8 +66,11 @@ ClientSelection Menu::selection_prompt() {
     this->first_run = false;
   }
   action = this->action_prompt();
-  if (action == sockophil::PUT || action == sockophil::GET) {
+  if (action == sockophil::PUT || action == sockophil::GET ) {
     filename = this->filename_prompt();
+    return ClientSelection(action, filename);
+  }else if(action == sockophil::LOGIN){
+    filename = this->login_prompt();
     return ClientSelection(action, filename);
   }
   return ClientSelection(action);
@@ -96,6 +99,9 @@ sockophil::ClientAction Menu::action_prompt() const noexcept {
     } else if (input_action == "quit" || input_action == "q") {
       action = sockophil::QUIT;
       break;
+    }else if (input_action == "login"){
+      action = sockophil::LOGIN;
+      break;
     }
 
     std::cout << "Error: Invalid input!" << std::endl;
@@ -110,6 +116,7 @@ void Menu::render_action_prompt() const noexcept {
   rlutil::setColor(rlutil::LIGHTGREEN);
   std::cout << std::endl;
   std::cout << "\u250F Commands:" << std::endl;
+  std::cout << "\u2523\u2501\u2501 Login" << std::endl;
   std::cout << "\u2523\u2501\u2501 L List" << std::endl;
   std::cout << "\u2523\u2501\u2501 P Put" << std::endl;
   std::cout << "\u2523\u2501\u2501 G Get" << std::endl;
@@ -135,6 +142,39 @@ std::string Menu::filename_prompt() const noexcept {
       return filename;
     }
   }
+}
+/**
+ * @brief Prompt for a username and a password
+ * @return Logindata as username and password seperated with a "/"
+ */
+std::string Menu::login_prompt() const noexcept {
+  std::string logindata = "";
+  std::string username = "";
+  std::string password = "";
+  this->render_username_prompt();
+  /* get the line from stdin and ignore leading whitespace */
+  std::getline(std::cin >> std::ws, username);
+  /* check if filename has whitespace or is empty */
+  this->render_password_prompt();
+  password = getpass("");
+  logindata = username + "/" + password;
+  return logindata;
+}
+/**
+ * @brief Render a prompt for a username
+ */
+void Menu::render_username_prompt() const noexcept {
+  rlutil::setColor(rlutil::LIGHTGREEN);
+  std::cout << "Username:" << std::endl;
+  std::cout << "> ";
+}
+/**
+ * @brief Render a prompt for a password
+ */
+void Menu::render_password_prompt() const noexcept {
+  rlutil::setColor(rlutil::LIGHTGREEN);
+  std::cout << "Password:" << std::endl;
+  std::cout << "> ";
 }
 /**
  * @brief Render a prompt for a filename

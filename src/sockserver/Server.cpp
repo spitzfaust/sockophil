@@ -103,14 +103,32 @@ void Server::listen_on_socket() {
     } else {
       std::cout << "Client connected from " << inet_ntoa(client_address.sin_addr) << ": "
                 << ntohs(client_address.sin_port) << std::endl;
-      /* Bool for to check if client is logged in */
-      bool authorized = false;
       /* thread begins */
-      this->pool->schedule([this, accepted_socket](const std::atomic_bool &stop) {
+      this->pool->schedule([this, accepted_socket, client_address](const std::atomic_bool &stop) {
+        /* Bool for to check if client is logged in */
+        bool authorized = false;
+        /* Int that takes up number of logins */
+        int login_tries = 0;
+        /* Client IPAdress */
+        std::string ip_Adress(inet_ntoa(client_address.sin_addr));
+        std::string logindata;
+        std::string username = "";
+        std::string password = "";
+        /* splitting the filename to username and password */
+        bool splitter = false;
+
         while (true) {
           if (stop) {
             close(accepted_socket);
             return;
+          }
+          /* getting number of logins
+           * or making a new entry */
+          {
+            std::lock_guard<std::mutex> lock(this->mut);
+            if(this->client_logins.count(ip_Adress) > 0){
+              login_tries = 4;
+            }
           }
           /* package that was sent by the client to the server */
           auto received_pkg = this->receive_package(accepted_socket);
@@ -133,31 +151,57 @@ void Server::listen_on_socket() {
                 close(accepted_socket);
                 return;
             }
-          }else if (/* check if map is < 3 */){
-            if(std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action() == sockophil::LOGIN){
-              std::string logindata = std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_filename();
-              std::string username = "";
-              std::string password = "";
-              /* splitting the filname to username and password */
-              bool splitter = false;
-              for(char p : logindata){
-                if(p == '/'){ splitter = true; }
-                if(splitter){
-                  password += p;
-                }else{
-                  username += p;
+          }else if (login_tries <= 3){
+            switch (std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()){
+              case sockophil::LOGIN:
+                logindata = std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_filename();
+                username = "";
+                password = "";
+                /* splitting the filename to username and password */
+                splitter = false;
+                for (char p : logindata) {
+                  if (p == '/') { splitter = true; }
+                  if (splitter) {
+                    password += p;
+                  } else {
+                    username += p;
+                  }
                 }
-              }
-              if(LDAP_login(username, password)){
-                authorized = true;
-                /* TODO send back correct input input */
-              }else{
-                /* TODO send back incorrect input
-                 * TODO edit map with ip and number of tries
-                 */
-              }
-
+                if (LDAP_login(username, password)) {
+                  authorized = true;
+                  /* TODO send back correct input input */
+                } else {
+                  ++login_tries;
+                  /* TODO send back incorrect input
+                   */
+                }
+                break;
+              case sockophil::LIST:
+                /* not logged in package */
+                break;
+              case sockophil::PUT:
+                /* not logged in package */
+                break;
+              case sockophil::GET:
+                /* not logged in package */
+                break;
+              case sockophil::QUIT:
+                close(accepted_socket);
+                return;
             }
+          }else{
+            {
+              std::lock_guard<std::mutex> lock(this->mut);
+              if(this->client_logins.count(ip_Adress) > 0){
+                /* TODO tell client he cant login till time + 30 min */
+              }else {
+                time_t now;
+                time(&now);
+                this->client_logins[ip_Adress] = now;
+                /* TODO tell client he cant login till time + 30 min */
+              }
+            }
+
           }
         }
       });
@@ -304,7 +348,8 @@ void Server::remove_file_mutex(std::string filename) {
 }
 
 bool Server::LDAP_login(std::string username, std::string password){
-
+  std::cout << username << std::endl;
+  std::cout << password << std::endl;
   LDAP *ld, *ld2;           /* ldap resources */
   LDAPMessage *result, *e;  /* LPAD results */
 

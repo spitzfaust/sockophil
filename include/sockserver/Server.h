@@ -44,7 +44,7 @@ class Server : public sockophil::Networking {
 
   std::map<std::string, std::unique_ptr<std::mutex>> file_muts;
 
-  std::map<std::string, int> client_logins;
+  std::map<std::string, std::time_t> client_logins;
 
   void create_socket();
 

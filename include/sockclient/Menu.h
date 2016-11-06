@@ -35,11 +35,17 @@ class Menu {
 
   void render_filename_prompt() const noexcept;
 
+  void render_username_prompt() const noexcept;
+
+  void render_password_prompt() const noexcept;
+
   std::string clear_eol() const noexcept;
 
   sockophil::ClientAction action_prompt() const noexcept;
 
   std::string filename_prompt() const noexcept;
+
+  std::string login_prompt() const noexcept;
 
  public:
   Menu(int port, std::string ip_address, std::string current_directory);
