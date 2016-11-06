@@ -47,10 +47,6 @@ class Server : public sockophil::Networking {
    */
   std::unique_ptr<ThreadPool> pool;
   /**
-   * @var mut is the mutex that is used to sync the tasks
-   */
-  std::mutex mut;
-  /**
    * @var file_muts is a map that holds a mutex for every file
    */
   std::map<std::string, std::unique_ptr<std::mutex>> file_muts;
@@ -73,7 +69,7 @@ class Server : public sockophil::Networking {
 
   bool is_client_blocked(std::string ip);
 
-  std::vector<std::string> directory_list() const;
+  std::vector<std::string> directory_list();
 
   void add_file_mutex(std::string filename);
 

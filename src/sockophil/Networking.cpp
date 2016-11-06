@@ -8,23 +8,28 @@
 #include <vector>
 #include <cerrno>
 #include <netinet/in.h>
-#include "cereal/archives/portable_binary.hpp"
+#include <mutex>
+#include "cereal/archives/json.hpp"
 #include "sockophil/ErrnoExceptions.h"
 #include "sockophil/Constants.h"
 #include "sockophil/Helper.h"
 #include "sockophil/Networking.h"
 
 namespace sockophil {
+
+Networking::~Networking() {}
+
 /**
  * @brief Send a package over a given socket
  * @param socket_descriptor is the number of the socket
  * @param package is a pointer to a package
  */
-void Networking::send_package(int socket_descriptor, const std::shared_ptr<Package> package) const {
+void Networking::send_package(int socket_descriptor, const std::shared_ptr<Package> package) {
   /* serialising the package */
   std::stringstream ss;
   /* need a block for Cereal to work correctly */
   {
+    std::lock_guard<std::mutex> lock(this->mut);
     cereal::PortableBinaryOutputArchive oarchive(ss);
     oarchive(package);
   }
@@ -47,7 +52,7 @@ void Networking::send_package(int socket_descriptor, const std::shared_ptr<Packa
  * @param socket_descriptor is the number of the socket
  * @return a received package
  */
-std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) const {
+std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) {
   /* stores the read data */
   std::vector<uint8_t> incoming;
   /* size of the received data */
@@ -57,6 +62,7 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
   long total_size = size_of_incoming;
   /* buffer for the blocks */
   uint8_t *buffer = nullptr;
+
   do {
     /* no header was received */
     if (size_of_incoming > 0 && size_of_incoming < BUF) {
@@ -86,6 +92,7 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
         std::stringstream data_stream(std::string(incoming.begin(), incoming.end()));
         /* need a block for Cereal to work correctly */
         {
+          std::lock_guard<std::mutex> lock(this->mut);
           cereal::PortableBinaryInputArchive iarchive(data_stream);
           iarchive(pkg);
         }
@@ -141,7 +148,7 @@ void Networking::socket_store_file(const int &socket_descriptor, std::ofstream &
   long total_received = 0;
 
   /* run until remaining is 0 */
-  while (remaining > 0) {
+  while (total_received != filesize) {
     /* number of bytes that was received */
     ssize_t size = 0;
     /* chunk (array) that will be read */
@@ -181,13 +188,22 @@ void Networking::socket_store_file(const int &socket_descriptor, std::ofstream &
   this->socket_store_file(socket_descriptor, output_file, [](const long &current, const long &total) {});
 }
 
+void Networking::socket_send_file(const int &socket_descriptor,
+                                  std::ifstream &input_file) const {
+  this->socket_send_file(socket_descriptor, input_file, [](const long &current, const long &total){});
+}
+
 /**
  * @brief Send a file in chunks over a socket.
  * @param socket_descriptor is the number of the socket
  * @param input_file is the filestream that is read from
  */
-void Networking::socket_send_file(const int &socket_descriptor, std::ifstream &input_file) const {
+void Networking::socket_send_file(const int &socket_descriptor,
+                                  std::ifstream &input_file,
+                                  const std::function<void(const long &,
+                                                           const long &)> &call) const {
   std::streampos filesize = 0;
+  long allready_sent = 0;
   filesize = input_file.tellg();
   input_file.seekg(0, std::ios::end);
   filesize = input_file.tellg() - filesize;
@@ -202,8 +218,15 @@ void Networking::socket_send_file(const int &socket_descriptor, std::ifstream &i
   std::array<uint8_t, BUF> buffer;
   while (input_file.read((char *) buffer.data(), buffer.size())) {
     send(socket_descriptor, buffer.data(), buffer.size(), 0);
+    allready_sent += buffer.size();
+    call(allready_sent, (long) filesize);
   }
   std::streamsize size_read = input_file.gcount();
-  send(socket_descriptor, buffer.data(), size_read, 0);
+  std::vector<uint8_t> remaining(buffer.begin(), buffer.begin() + size_read);
+  send(socket_descriptor, remaining.data(), remaining.size(), 0);
+  allready_sent += remaining.size();
+  if(size_read > 0) {
+    call(allready_sent, (long) filesize);
+  }
 }
 }

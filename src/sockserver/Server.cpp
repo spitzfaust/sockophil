@@ -229,32 +229,37 @@ void Server::run() {
  * @brief get a list of elements in the upload dir
  * @return a vector of elements in the upload dir
  */
-std::vector<std::string> Server::directory_list() const {
-  DIR *dirptr;
-  struct dirent *direntry;
+std::vector<std::string> Server::directory_list() {
+  DIR *dirptr = nullptr;
+  struct dirent *direntry = nullptr;
   std::vector<std::string> list;
-  dirptr = opendir(this->target_directory.c_str());
-  if (dirptr != NULL) {
-    /* store every entry in the vector */
-    while (true) {
-      struct stat fileinfo;
-      direntry = readdir(dirptr);
-      if (direntry) {
-        /* try to get the fileinfo of the entry */
-        if(stat((this->target_directory + std::string(direntry->d_name)).c_str(), &fileinfo) != -1) {
-          /* add the name and the size to the vector */
-          list.push_back(std::string(direntry->d_name) + " - " + std::to_string(fileinfo.st_size));
+  {
+    std::lock_guard<std::mutex> lock(this->mut);
+    dirptr = opendir(this->target_directory.c_str());
+    if (dirptr != nullptr) {
+      /* store every entry in the vector */
+      while (true) {
+        struct stat fileinfo;
+        direntry = readdir(dirptr);
+        if (direntry) {
+          /* try to get the fileinfo of the entry */
+          if (stat((this->target_directory + std::string(direntry->d_name)).c_str(), &fileinfo) != -1) {
+            /* add the name and the size to the vector */
+            list.push_back(std::string(direntry->d_name) + " - " + std::to_string(fileinfo.st_size));
+          }
+        } else {
+          break;
         }
-      } else {
-        break;
       }
     }
+    closedir(dirptr);
+  }
+  if(!list.empty()) {
     /* sort the vector alphabetically */
     std::sort(list.begin(), list.end());
     /* erase first 2 entries (".","..") */
     list.erase(list.begin(), list.begin() + 2);
   }
-  closedir(dirptr);
   return list;
 }
 

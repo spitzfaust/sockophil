@@ -60,13 +60,13 @@ class Client : public sockophil::Networking {
 
   void create_socket();
   void connect_to_socket();
-  void request_a_list() const;
-  void download_a_file(std::string filename) const;
-  void upload_a_file(std::string filepath) const;
-  void bid_server_farewell() const;
+  void request_a_list();
+  void download_a_file(std::string filename);
+  void upload_a_file(std::string filepath);
+  void bid_server_farewell();
   void login();
-  void send_package(const std::shared_ptr<sockophil::Package> data) const;
-  std::shared_ptr<sockophil::Package> receive_package() const;
+  void send_package(const std::shared_ptr<sockophil::Package> data);
+  std::shared_ptr<sockophil::Package> receive_package();
 
  public:
   Client(unsigned short port, std::string ip_address);

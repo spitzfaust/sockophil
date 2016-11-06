@@ -72,7 +72,7 @@ void Client::run() {
     this->login();
   }
 
-  if(this->blocked) {
+  if (this->blocked) {
     return;
   }
 
@@ -100,7 +100,7 @@ void Client::run() {
 /**
  * @brief Request a list of files from the server and let the menu render it
  */
-void Client::request_a_list() const {
+void Client::request_a_list() {
   /* send the LIST request to the server */
   this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::LIST));
   /* hopefully receive a list package from the server */
@@ -109,15 +109,17 @@ void Client::request_a_list() const {
     /* cast the Package ptr to a ListPackage */
     auto list_pkg = std::static_pointer_cast<sockophil::ListPackage>(pkg);
     this->menu->render_list_response(list_pkg->get_list());
+  } else if (pkg->get_type() == sockophil::ERROR_PACKAGE) {
+    this->menu->render_error(std::static_pointer_cast<sockophil::ErrorPackage>(pkg)->get_error_code());
   } else {
-    this->menu->render_error("List Error: Server did not send a list!");
+    this->menu->render_error(sockophil::WRONG_PACKAGE);
   }
 }
 
 /**
  * @brief Send the QUIT action to the server and render a goodby message
  */
-void Client::bid_server_farewell() const {
+void Client::bid_server_farewell() {
   this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::QUIT));
   /** @todo maybe own goodby function */
   this->menu->render_success("Goodbye!");
@@ -128,7 +130,7 @@ void Client::bid_server_farewell() const {
  * @brief Try to upload a file to the server
  * @param filepath is the path of the file to upload
  */
-void Client::upload_a_file(std::string filepath) const {
+void Client::upload_a_file(std::string filepath) {
   /* should point to a ErrorPackage or SuccessPackage */
   std::shared_ptr<sockophil::Package> received_pkg = nullptr;
   /* filestream to read from */
@@ -143,7 +145,10 @@ void Client::upload_a_file(std::string filepath) const {
     /* send the actual data */
     this->send_package(std::make_shared<sockophil::FileInfoPackage>(filename));
     this->menu->render_status_upload();
-    this->socket_send_file(this->socket_descriptor, input_file);
+    this->socket_send_file(this->socket_descriptor, input_file,
+                           [this](const unsigned long &current, const unsigned long &total) {
+                             this->menu->render_progress(current, total);
+                           });
     /* wait for the success or error message */
     received_pkg = this->receive_package();
     if (received_pkg->get_type() == sockophil::SUCCESS_PACKAGE) {
@@ -167,7 +172,7 @@ void Client::upload_a_file(std::string filepath) const {
  * @brief Download a file from the server to the current folder
  * @param filename is the name of the file that should be downloaded
  */
-void Client::download_a_file(std::string filename) const {
+void Client::download_a_file(std::string filename) {
   /* send a get request with the filename */
   this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::GET, filename));
   /* hopefully receive a FileInfoPackage from the server */
@@ -229,7 +234,7 @@ void Client::login() {
  * @brief Send a Package to the server
  * @param package is the Package that should be sent
  */
-void Client::send_package(const std::shared_ptr<sockophil::Package> package) const {
+void Client::send_package(const std::shared_ptr<sockophil::Package> package) {
   /* call the send package of the parent */
   sockophil::Networking::send_package(this->socket_descriptor, package);
 }
@@ -249,7 +254,7 @@ void Client::connect_to_socket() {
  * @brief Receive a package from the
  * @return a shared pointer to a received Package
  */
-std::shared_ptr<sockophil::Package> Client::receive_package() const {
+std::shared_ptr<sockophil::Package> Client::receive_package() {
   /* call the function of the parent class */
   return sockophil::Networking::receive_package(this->socket_descriptor);
 }
