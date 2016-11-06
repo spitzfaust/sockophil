@@ -32,7 +32,7 @@ static const char USAGE[] =
 int main(int argc, const char **argv) {
   int port = 0;
   std::string dir = "";
-  std::string version = "sockserver 0.1";
+  std::string version = "sockserver 2.0";
   /* client pointer that is used later */
   std::shared_ptr<sockserver::Server> server;
   /* set the title of the terminal window */
