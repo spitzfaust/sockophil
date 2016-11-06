@@ -10,12 +10,16 @@
 #include <arpa/inet.h>
 #include <sstream>
 #include <fstream>
-#include <sockophil/Networking.h>
 #include <algorithm>
+#include <tuple>
+#include "sockophil/Networking.h"
 #include "sockophil/Helper.h"
 #include "cereal/archives/portable_binary.hpp"
 #include "sockophil/Constants.h"
 #include "sockophil/FileInfoPackage.h"
+#include "sockophil/LoginPackage.h"
+#include "sockophil/AccessPackage.h"
+#include "sockophil/ActionPackage.h"
 #include "sockophil/ErrnoExceptions.h"
 #include "sockclient/Client.h"
 #include "sockophil/Protocol.h"
@@ -27,7 +31,8 @@ namespace sockclient {
  * @param port to connect to
  * @param ip_address to connect tom
  */
-Client::Client(unsigned short port, std::string ip_address) : port(port), ip_address(ip_address) {
+Client::Client(unsigned short port, std::string ip_address)
+    : port(port), ip_address(ip_address), logged_in(false), blocked(false) {
   char current_directory[1024];
   /* get the current working directory string */
   if (getcwd(current_directory, sizeof(current_directory)) == nullptr) {
@@ -61,26 +66,32 @@ void Client::create_socket() {
  * @brief Calls the menu to prompt the user for input and reacts on it.
  */
 void Client::run() {
-  bool check = true;
-  while (check) {
+  bool keep_running = true;
+
+  while (!this->logged_in && !this->blocked) {
+    this->login();
+  }
+
+  if(this->blocked) {
+    return;
+  }
+
+  while (keep_running) {
     /* get a selection */
     auto selection = this->menu->selection_prompt();
-    switch (selection.get_action()) {
-      case sockophil::LOGIN:
-        this->login_to_server(selection.get_filename());
-        break;
+    switch (selection.first) {
       case sockophil::LIST:
         this->request_a_list();
         break;
       case sockophil::QUIT:
         this->bid_server_farewell();
-        check = false;
+        keep_running = false;
         break;
       case sockophil::GET:
-        this->download_a_file(selection.get_filename());
+        this->download_a_file(selection.second);
         break;
       case sockophil::PUT:
-        this->upload_a_file(selection.get_filename());
+        this->upload_a_file(selection.second);
         break;
     }
   }
@@ -138,12 +149,12 @@ void Client::upload_a_file(std::string filepath) const {
     if (received_pkg->get_type() == sockophil::SUCCESS_PACKAGE) {
       this->menu->render_success("Successfully uploaded the file " + filename + " to the server!");
     } else if (received_pkg->get_type() == sockophil::ERROR_PACKAGE) {
-      this->menu->render_error(sockophil::PUT,
-                               std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg)
-                                   ->get_error_code());
+      this->menu->render_error(
+          std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg)
+              ->get_error_code());
     } else {
       /* received a package that was not expected */
-      this->menu->render_error(sockophil::PUT, sockophil::WRONG_PACKAGE);
+      this->menu->render_error(sockophil::WRONG_PACKAGE);
     }
   } else {
     this->menu->render_error("Put Error: File could not be opened!");
@@ -185,17 +196,33 @@ void Client::download_a_file(std::string filename) const {
     /* close the file */
     output_file.close();
   } else if (received_pkg->get_type() == sockophil::ERROR_PACKAGE) {
-    this->menu->render_error(sockophil::GET,
-                             std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg)
+    this->menu->render_error(std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg)
                                  ->get_error_code());
   } else {
-    this->menu->render_error(sockophil::GET,
-                             sockophil::WRONG_PACKAGE);
+    this->menu->render_error(sockophil::WRONG_PACKAGE);
   }
 }
 
-void Client::login_to_server(std::string logindata) const{
-  this->send_package(std::make_shared<sockophil::ActionPackage>(sockophil::LOGIN, logindata));
+void Client::login() {
+  auto user_data = this->menu->login_prompt();
+  this->send_package(std::make_shared<sockophil::LoginPackage>(user_data.first, user_data.second));
+  auto received_pkg = this->receive_package();
+  if (received_pkg->get_type() == sockophil::ACCESS_PACKAGE) {
+    auto access_pkg = std::static_pointer_cast<sockophil::AccessPackage>(received_pkg);
+    if (access_pkg->get_ok()) {
+      this->logged_in = true;
+    } else {
+      this->menu->render_login_error(access_pkg->get_tries(), access_pkg->get_max_tries());
+    }
+  } else if (received_pkg->get_type() == sockophil::ERROR_PACKAGE) {
+    auto error_pkg = std::static_pointer_cast<sockophil::ErrorPackage>(received_pkg);
+    if (error_pkg->get_error_code() == sockophil::CLIENT_BLOCKED) {
+      this->blocked = true;
+    }
+    this->menu->render_error(error_pkg->get_error_code());
+  } else {
+    this->menu->render_error(sockophil::WRONG_PACKAGE);
+  }
 }
 
 /**

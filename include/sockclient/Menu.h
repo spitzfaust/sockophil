@@ -6,9 +6,9 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
 #include "rlutil/rlutil.h"
 #include "sockophil/Protocol.h"
-#include "sockclient/ClientSelection.h"
 
 namespace sockclient {
 /**
@@ -45,12 +45,13 @@ class Menu {
 
   std::string filename_prompt() const noexcept;
 
-  std::string login_prompt() const noexcept;
-
  public:
+
   Menu(int port, std::string ip_address, std::string current_directory);
 
-  ClientSelection selection_prompt();
+  std::pair<sockophil::ClientAction, std::string> selection_prompt();
+
+  std::pair<std::string, std::string> login_prompt() const noexcept;
 
   std::string get_connected_on() const noexcept;
 
@@ -64,7 +65,9 @@ class Menu {
 
   void render_error(const std::string &error_msg) const noexcept;
 
-  void render_error(sockophil::ClientAction action, sockophil::ErrorCode error_code) const noexcept;
+  void render_error(sockophil::ErrorCode error_code) const noexcept;
+
+  void render_login_error(unsigned short tries, unsigned short max_tries) const noexcept;
 
   void render_status_upload() const noexcept;
 };

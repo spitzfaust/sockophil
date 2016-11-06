@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -pthread -lldap -llber -DLDAP_DEPRECATED")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -lldap -llber -DLDAP_DEPRECATED")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 include(GNUInstallDirs)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")

@@ -49,16 +49,24 @@ class Client : public sockophil::Networking {
    * @var menu is used to interact with the user and get orders
    */
   std::unique_ptr<Menu> menu;
+  /**
+   * @var logged_in is used to store the login status of the client
+   */
+  bool logged_in;
+  /**
+   * @var blocked is set to true if client was blocked by server
+   */
+  bool blocked;
+
   void create_socket();
   void connect_to_socket();
   void request_a_list() const;
   void download_a_file(std::string filename) const;
   void upload_a_file(std::string filepath) const;
-  void login_to_server(std::string logindata) const;
   void bid_server_farewell() const;
+  void login();
   void send_package(const std::shared_ptr<sockophil::Package> data) const;
   std::shared_ptr<sockophil::Package> receive_package() const;
-  void login_to_server(std::string username, std::string password) const;
 
  public:
   Client(unsigned short port, std::string ip_address);

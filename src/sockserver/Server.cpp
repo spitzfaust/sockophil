@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -14,18 +15,18 @@
 #include <condition_variable>
 #include <atomic>
 #include <termios.h>
+#include <ldap.h>
+#include "cereal/archives/portable_binary.hpp"
 #include "sockserver/Server.h"
 #include "sockophil/Helper.h"
-#include "cereal/archives/portable_binary.hpp"
 #include "sockophil/ErrnoExceptions.h"
 #include "sockophil/ListPackage.h"
 #include "sockophil/Package.h"
 #include "sockophil/FileInfoPackage.h"
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
-#include "sockophil/Constants.h"
 
-#include "ldap.h"
+#include "sockophil/Constants.h"
 
 #define LDAP_HOST "ldap.technikum-wien.at"
 #define SEARCHBASE "dc=technikum-wien,dc=at"
@@ -44,8 +45,7 @@ namespace sockserver {
 Server::Server(unsigned short port, std::string target_directory) : port(port) {
   this->pool = std::make_unique<ThreadPool>();
   this->target_directory = sockophil::Helper::add_trailing_slash(target_directory);
-  this->client_logins;
-  this->dir_list();
+
   this->create_socket();
   this->bind_to_socket();
 }
@@ -105,110 +105,101 @@ void Server::listen_on_socket() {
                 << ntohs(client_address.sin_port) << std::endl;
       /* thread begins */
       this->pool->schedule([this, accepted_socket, client_address](const std::atomic_bool &stop) {
-        /* Bool for to check if client is logged in */
-        bool authorized = false;
-        /* Int that takes up number of logins */
-        int login_tries = 0;
-        /* Client IPAdress */
-        std::string ip_Adress(inet_ntoa(client_address.sin_addr));
-        std::string logindata;
-        std::string username = "";
-        std::string password = "";
-        /* splitting the filename to username and password */
-        bool splitter = false;
+        /* number of login login_tries */
+        unsigned short login_tries = 0;
+        /* true if the client is logged in */
+        bool logged_in = false;
+        /* ip address of the client */
+        std::string ip_address(inet_ntoa(client_address.sin_addr));
 
         while (true) {
           if (stop) {
             close(accepted_socket);
             return;
           }
-          /* getting number of logins
-           * or making a new entry */
-          {
-            std::lock_guard<std::mutex> lock(this->mut);
-            if(this->client_logins.count(ip_Adress) > 0){
-              login_tries = 4;
-            }
-          }
-          /* package that was sent by the client to the server */
-          auto received_pkg = this->receive_package(accepted_socket);
-          /* a ActionPackage should be received */
-          if (received_pkg->get_type() == sockophil::ACTION_PACKAGE && authorized) {
-            /* check which action should be performed */
-            switch (std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()) {
-              case sockophil::LIST:
-                this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->dir_list()));
-                break;
-              case sockophil::PUT:
-                this->store_file(accepted_socket);
-                break;
-              case sockophil::GET:
-                this->return_file(accepted_socket,
-                                  std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)
-                                      ->get_filename());
-                break;
-              case sockophil::QUIT:
-                close(accepted_socket);
-                return;
-            }
-          }else if (login_tries <= 3){
-            switch (std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()){
-              case sockophil::LOGIN:
-                logindata = std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_filename();
-                username = "";
-                password = "";
-                /* splitting the filename to username and password */
-                splitter = false;
-                for (char p : logindata) {
-                  if (p == '/') {
-                    splitter = true;
-                  }else {
-                    if (splitter) {
-                      password += p;
-                    } else {
-                      username += p;
+          try {
+            /* client needs to log in */
+            if (!logged_in) {
+              /* get the login package */
+              auto received_pkg = this->receive_package(accepted_socket);
+              /* should be a LoginPackage */
+              if (received_pkg->get_type() == sockophil::LOGIN_PACKAGE) {
+                /* check if the client is blocked */
+                if (this->is_client_blocked(ip_address)) {
+                  /* abort if client is blocked */
+                  this->send_package(accepted_socket,
+                                     std::make_shared<sockophil::ErrorPackage>(sockophil::CLIENT_BLOCKED));
+                  close(accepted_socket);
+                  return;
+                } else {
+                  /* convert the package to a login package */
+                  auto login_pkg = std::static_pointer_cast<sockophil::LoginPackage>(received_pkg);
+                  /* try to log in via ldap */
+                  logged_in = ldap_login(login_pkg->get_username(), login_pkg->get_password());
+                  /* a new login try was made */
+                  ++login_tries;
+                  /* the client could not log in successfully and has made to many attempts */
+                  if (!logged_in && login_tries >= this->MAX_LOGIN_TRIES) {
+                    {
+                      std::lock_guard<std::mutex> lock(this->mut);
+                      std::cout << "Blocking " << ip_address << std::endl;
+                      /* add the ip of the client to the blocklist */
+                      this->blocked_clients[ip_address] = std::chrono::system_clock::now();
                     }
+                    /* inform the client about the block and abort */
+                    this->send_package(accepted_socket,
+                                       std::make_shared<sockophil::ErrorPackage>(sockophil::CLIENT_BLOCKED));
+                    close(accepted_socket);
+                    return;
+                  } else {
+                    /* login was either successfull or not */
+                    this->send_package(accepted_socket,
+                                       std::make_shared<sockophil::AccessPackage>(logged_in,
+                                                                                  login_tries,
+                                                                                  this->MAX_LOGIN_TRIES));
                   }
                 }
-                if (LDAP_login(username, password)) {
-                  authorized = true;
-                  std::cout << "fuck yeah" << std::endl;
-                  /* TODO send back correct input input */
-                } else {
-                  ++login_tries;
-                  /* TODO send back incorrect input
-                   */
-                }
-                break;
-              case sockophil::LIST:
-                /* not logged in package */
-                break;
-              case sockophil::PUT:
-                /* not logged in package */
-                break;
-              case sockophil::GET:
-                /* not logged in package */
-                break;
-              case sockophil::QUIT:
+              } else {
+                /* Client did't send a LoginPackage - abort */
+                this->send_package(accepted_socket,
+                                   std::make_shared<sockophil::ErrorPackage>(sockophil::WRONG_PACKAGE));
                 close(accepted_socket);
                 return;
-            }
-          }else{
-            {
-              std::lock_guard<std::mutex> lock(this->mut);
-              if(this->client_logins.count(ip_Adress) > 0){
-                /* TODO tell client he cant login till time + 30 min */
-              }else {
-                time_t now;
-                time(&now);
-                this->client_logins[ip_Adress] = now;
-                /* TODO tell client he cant login till time + 30 min */
+              }
+            } else {
+              /* package that was sent by the client to the server */
+              auto received_pkg = this->receive_package(accepted_socket);
+              /* a ActionPackage should be received */
+              if (received_pkg->get_type() == sockophil::ACTION_PACKAGE && logged_in) {
+                /* check which action should be performed */
+                switch (std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)->get_action()) {
+                  case sockophil::LIST:
+                    this->send_package(accepted_socket, std::make_shared<sockophil::ListPackage>(this->directory_list()));
+                    break;
+                  case sockophil::PUT:
+                    this->store_file(accepted_socket);
+                    break;
+                  case sockophil::GET:
+                    this->return_file(accepted_socket,
+                                      std::static_pointer_cast<sockophil::ActionPackage>(received_pkg)
+                                          ->get_filename());
+                    break;
+                  case sockophil::QUIT:
+                    close(accepted_socket);
+                    return;
+                }
               }
             }
-
+          } catch (const sockophil::SocketReceiveException &e) {
+            {
+              std::lock_guard<std::mutex> lock(this->mut);
+              std::cout << "Catched a SocketReceiveException: " << e.what() << std::endl;
+            }
+            close(accepted_socket);
+            return;
           }
         }
-      });
+      }); // end of the scheduling
     }
   }
 }
@@ -230,7 +221,7 @@ void Server::run() {
  * @brief get a list of elements in the upload dir
  * @return a vector of elements in the upload dir
  */
-std::vector<std::string> Server::dir_list() const {
+std::vector<std::string> Server::directory_list() const {
   DIR *dirptr;
   struct dirent *direntry;
   std::vector<std::string> list;
@@ -238,9 +229,12 @@ std::vector<std::string> Server::dir_list() const {
   if (dirptr != NULL) {
     /* store every entry in the vector */
     while (true) {
+      struct stat fileinfo;
       direntry = readdir(dirptr);
       if (direntry) {
-        list.push_back(std::string(direntry->d_name));
+        if(stat((this->target_directory + std::string(direntry->d_name)).c_str(), &fileinfo) != -1) {
+          list.push_back(std::string(direntry->d_name) + " - " + std::to_string(fileinfo.st_size));
+        }
       } else {
         break;
       }
@@ -294,7 +288,7 @@ void Server::store_file(int accepted_socket) {
   }
   /* send the response to the client */
   this->send_package(accepted_socket, response_package);
-  if(!file_opened) {
+  if (!file_opened) {
     this->remove_file_mutex(data_package->get_filename());
   }
 }
@@ -329,7 +323,7 @@ void Server::return_file(int accepted_socket, std::string filename) {
     }
     in_file.close();
   }
-  if(!file_opened) {
+  if (!file_opened) {
     this->remove_file_mutex(filename);
   }
   /* send the response */
@@ -339,7 +333,7 @@ void Server::add_file_mutex(std::string filename) {
   {
     std::lock_guard<std::mutex> lock(this->mut);
     if (this->file_muts.find(filename) == this->file_muts.end()) {
-      file_muts.emplace(std::make_pair(filename, std::make_unique<std::mutex>()));
+      this->file_muts.emplace(std::make_pair(filename, std::make_unique<std::mutex>()));
     }
   }
 }
@@ -347,11 +341,11 @@ void Server::add_file_mutex(std::string filename) {
 void Server::remove_file_mutex(std::string filename) {
   {
     std::lock_guard<std::mutex> lock(this->mut);
-    file_muts.erase(filename);
+    this->file_muts.erase(filename);
   }
 }
 
-bool Server::LDAP_login(std::string username, std::string password){
+bool Server::ldap_login(std::string username, std::string password) {
   LDAP *ld, *ld2;           /* ldap resources */
   LDAPMessage *result, *e;  /* LPAD results */
 
@@ -362,8 +356,7 @@ bool Server::LDAP_login(std::string username, std::string password){
   attributes[1] = strdup("cn");
   attributes[2] = NULL;        /* array must be NULL terminated */
 
-  if ((ld = ldap_init(LDAP_HOST, LDAP_PORT)) == NULL){
-    perror("LDAP init failed");
+  if ((ld = ldap_init(LDAP_HOST, LDAP_PORT)) == NULL) {
     return false;
   }
   /* first we bind anonymously */
@@ -371,44 +364,63 @@ bool Server::LDAP_login(std::string username, std::string password){
 
   std::stringstream ss;
   ss << "(uid=" << username << "*)";
-  rc = ldap_search_s(ld, SEARCHBASE, SCOPE, ss.str().c_str(), attributes, 0, &result );
-  if(rc != LDAP_SUCCESS){
-    std::cout << "LDAP search error: " << ldap_err2string(rc) << std::endl;
+  rc = ldap_search_s(ld, SEARCHBASE, SCOPE, ss.str().c_str(), attributes, 0, &result);
+  if (rc != LDAP_SUCCESS) {
     return false;
   }
   int nrOfRecords = ldap_count_entries(ld, result);
 
-  if (nrOfRecords > 0){
+  if (nrOfRecords > 0) {
     struct termios term, term_orig;
     tcgetattr(STDERR_FILENO, &term);
     term_orig = term;
     term.c_lflag &= ~ECHO;
     tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
-
     tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
 
     rc = 0;
     e = ldap_first_entry(ld, result);
-    char * dn;
-    if ((dn = ldap_get_dn( ld, e )) != NULL ) {
+    char *dn;
+    if ((dn = ldap_get_dn(ld, e)) != NULL) {
       /* rebind */
       ld2 = ldap_init(LDAP_HOST, LDAP_PORT);
       rc = ldap_simple_bind_s(ld2, dn, password.c_str());
       if (rc != 0) {
-        std::cout << "Username or Password incorrect!" << std::endl;
         return false;
       }
       ldap_unbind(ld2);
       ldap_memfree(dn);
     }
   } else {
-    std::cout << "Username or Password incorrect!" << std::endl;
     return false;
   }
 
   ldap_unbind(ld);
   return true;
+}
+
+bool Server::is_client_blocked(std::string ip) {
+  auto now = std::chrono::system_clock::now();
+  std::chrono::system_clock::time_point blocked_at;
+  {
+    std::lock_guard<std::mutex> lock(this->mut);
+    if (this->blocked_clients.count(ip) > 0) {
+      blocked_at = this->blocked_clients[ip];
+    } else {
+      return false;
+    }
+  }
+  if (std::chrono::duration_cast<std::chrono::seconds>(now - blocked_at)
+      < std::chrono::duration_cast<std::chrono::seconds>(this->BLOCKING_MINUTES)) {
+    return true;
+  } else {
+    {
+      std::lock_guard<std::mutex> lock(this->mut);
+      this->blocked_clients.erase(ip);
+    }
+    return false;
+  }
 }
 
 }

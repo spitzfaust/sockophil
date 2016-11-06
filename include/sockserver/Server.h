@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <chrono>
 #include <memory>
 #include <netinet/in.h>
 #include "sockophil/Networking.h"
@@ -17,6 +18,14 @@ namespace sockserver {
  */
 class Server : public sockophil::Networking {
  private:
+  /**
+    * @var MAX_LOGIN_TRIES is the maximum number of login tries from a client on the server
+    */
+  const unsigned short MAX_LOGIN_TRIES = 3;
+  /**
+   * @var BLOCKING_TIME is the time a client is blocked
+   */
+  const std::chrono::minutes BLOCKING_MINUTES = std::chrono::minutes(3);
   /**
    * @var port the server listens on
    */
@@ -44,7 +53,7 @@ class Server : public sockophil::Networking {
 
   std::map<std::string, std::unique_ptr<std::mutex>> file_muts;
 
-  std::map<std::string, std::time_t> client_logins;
+  std::map<std::string, std::chrono::system_clock::time_point> blocked_clients;
 
   void create_socket();
 
@@ -58,7 +67,9 @@ class Server : public sockophil::Networking {
 
   void return_file(int accepted_socket, std::string filename);
 
-  std::vector<std::string> dir_list() const;
+  bool is_client_blocked(std::string ip);
+
+  std::vector<std::string> directory_list() const;
 
   void add_file_mutex(std::string filename);
 
@@ -66,7 +77,7 @@ class Server : public sockophil::Networking {
 
  public:
 
-  bool LDAP_login(std::string username, std::string password);
+  bool ldap_login(std::string username, std::string password);
 
   Server(unsigned short port, std::string target_dir);
 

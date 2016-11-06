@@ -11,3 +11,5 @@
 #include "sockophil/ActionPackage.h"
 #include "sockophil/ErrorPackage.h"
 #include "sockophil/SuccessPackage.h"
+#include "sockophil/LoginPackage.h"
+#include "sockophil/AccessPackage.h"

@@ -106,8 +106,7 @@ std::shared_ptr<Package> Networking::receive_package(int socket_descriptor) cons
  */
 void Networking::send_header(const int &socket_descriptor, long header) const {
   header = htonl(header);
-  long *header_ptr = &header;
-  send(socket_descriptor, header_ptr, sizeof(header), 0);
+  send(socket_descriptor, &header, sizeof(header), 0);
 }
 
 /**
@@ -118,8 +117,7 @@ void Networking::send_header(const int &socket_descriptor, long header) const {
  */
 long Networking::receive_header(const int &socket_descriptor) const {
   long header = 0;
-  long *header_ptr = &header;
-  if (recv(socket_descriptor, header_ptr, sizeof(header), 0) > 0) {
+  if (recv(socket_descriptor, &header, sizeof(header), 0) > 0) {
     return ntohl(header);
   } else {
     /* something went wrong while reading from socket */

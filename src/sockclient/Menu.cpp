@@ -58,7 +58,7 @@ std::string Menu::get_connected_on() const noexcept {
  * @brief Display a Menu for the User to choose from the different Client actions
  * @return the selection the user made
  */
-ClientSelection Menu::selection_prompt() {
+std::pair<sockophil::ClientAction, std::string> Menu::selection_prompt() {
   sockophil::ClientAction action;
   std::string filename = "";
   if (this->first_run) {
@@ -66,14 +66,11 @@ ClientSelection Menu::selection_prompt() {
     this->first_run = false;
   }
   action = this->action_prompt();
-  if (action == sockophil::PUT || action == sockophil::GET ) {
+  if (action == sockophil::PUT || action == sockophil::GET) {
     filename = this->filename_prompt();
-    return ClientSelection(action, filename);
-  }else if(action == sockophil::LOGIN){
-    filename = this->login_prompt();
-    return ClientSelection(action, filename);
+    return std::make_pair(action, filename);
   }
-  return ClientSelection(action);
+  return std::make_pair(action, "");
 }
 
 /**
@@ -99,9 +96,6 @@ sockophil::ClientAction Menu::action_prompt() const noexcept {
     } else if (input_action == "quit" || input_action == "q") {
       action = sockophil::QUIT;
       break;
-    }else if (input_action == "login"){
-      action = sockophil::LOGIN;
-      break;
     }
 
     std::cout << "Error: Invalid input!" << std::endl;
@@ -116,7 +110,6 @@ void Menu::render_action_prompt() const noexcept {
   rlutil::setColor(rlutil::LIGHTGREEN);
   std::cout << std::endl;
   std::cout << "\u250F Commands:" << std::endl;
-  std::cout << "\u2523\u2501\u2501 Login" << std::endl;
   std::cout << "\u2523\u2501\u2501 L List" << std::endl;
   std::cout << "\u2523\u2501\u2501 P Put" << std::endl;
   std::cout << "\u2523\u2501\u2501 G Get" << std::endl;
@@ -147,18 +140,15 @@ std::string Menu::filename_prompt() const noexcept {
  * @brief Prompt for a username and a password
  * @return Logindata as username and password seperated with a "/"
  */
-std::string Menu::login_prompt() const noexcept {
-  std::string logindata = "";
+std::pair<std::string, std::string> Menu::login_prompt() const noexcept {
   std::string username = "";
   std::string password = "";
   this->render_username_prompt();
   /* get the line from stdin and ignore leading whitespace */
   std::getline(std::cin >> std::ws, username);
-  /* check if filename has whitespace or is empty */
   this->render_password_prompt();
   password = getpass("");
-  logindata = username + "/" + password;
-  return logindata;
+  return std::make_pair(username, password);
 }
 /**
  * @brief Render a prompt for a username
@@ -175,6 +165,7 @@ void Menu::render_password_prompt() const noexcept {
   rlutil::setColor(rlutil::LIGHTGREEN);
   std::cout << "Password:" << std::endl;
   std::cout << "> ";
+  rlutil::resetColor();
 }
 /**
  * @brief Render a prompt for a filename
@@ -233,27 +224,9 @@ void Menu::render_error(const std::string &error_msg) const noexcept {
  * @param action is the action that was performed while the error happend
  * @param error_code is the code that identifies the error
  */
-void Menu::render_error(sockophil::ClientAction action, sockophil::ErrorCode error_code) const noexcept {
-  std::string error_msg = "";
+void Menu::render_error(sockophil::ErrorCode error_code) const noexcept {
+  std::string error_msg = "Error: ";
 
-  switch (action) {
-    case sockophil::GET:
-      error_msg = "Get";
-      break;
-    case sockophil::LIST:
-      error_msg = "List";
-      break;
-    case sockophil::PUT:
-      error_msg = "Put";
-      break;
-    case sockophil::QUIT:
-      error_msg = "Quit";
-      break;
-    default:
-      error_msg = "Client";
-      break;
-  }
-  error_msg += " Error: ";
   switch (error_code) {
     case sockophil::FILE_NOT_FOUND:
       error_msg += "Could not find the file.";
@@ -263,6 +236,9 @@ void Menu::render_error(sockophil::ClientAction action, sockophil::ErrorCode err
       break;
     case sockophil::FILE_STORAGE:
       error_msg += "Could not save the file.";
+      break;
+    case sockophil::CLIENT_BLOCKED:
+      error_msg += "The Client is blocked.";
       break;
     default:
       error_msg += "Unknown error.";
@@ -308,5 +284,11 @@ void Menu::render_status_upload() const noexcept {
   rlutil::setColor(rlutil::YELLOW);
   std::cout << "Uploading..." << std::endl;
   rlutil::resetColor();
+}
+
+void Menu::render_login_error(unsigned short tries, unsigned short max_tries) const noexcept {
+  std::string
+      error_msg = "Login failed. You have left " + std::to_string(max_tries - tries) + " until you are blocked.";
+  this->render_error(error_msg);
 }
 }

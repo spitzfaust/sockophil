@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+
 namespace sockophil {
 /**
  * @var MAX_PORT is the maximum port number that is allowed
@@ -22,6 +23,14 @@ const unsigned int DEFAULT_PORT = 1337;
  * @var BUF is the buffer that is read from the socket
  */
 const unsigned int BUF = 1024;
+/**
+ * @var LOGIN_PACKAGE identifies the LoginPackage class
+ */
+const std::string LOGIN_PACKAGE = "LOGIN_PACKAGE";
+/**
+ * @var ACCESS_PACKAGE identifies the AccessPackage class
+ */
+const std::string ACCESS_PACKAGE = "ACCESS_PACKAGE";
 /**
  * @var FILE_INFO_PACKAGE identifies the FileInfoPackage class
  */
@@ -47,11 +56,13 @@ const std::string SUCCESS_PACKAGE = "SUCCESS_PACKAGE";
  * @var MIN_NUMBER_THREADS is the minimum number of threads in the server threadpool
  */
 const unsigned int MIN_NUMBER_THREADS = 4;
+
+
 /*
-std::string LDAP_HOST = "ldap.technikum-wien.at";
-const char* SEARCHBASE = "dc=technikum-wien,dc=at";
-const char* FILTER = "(uid=if15b029*)";
-const char* BIND_USER = NULL;        /* anonymous bind with user and pw NULL *//*
-const char* BIND_PW = NULL;
+  std::string LDAP_HOST = "ldap.technikum-wien.at";
+  const char* SEARCHBASE = "dc=technikum-wien,dc=at";
+  const char* FILTER = "(uid=if15b029*)";
+  const char* BIND_USER = NULL;
+  const char* BIND_PW = NULL;
 */
 }

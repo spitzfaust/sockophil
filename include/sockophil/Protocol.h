@@ -27,10 +27,6 @@ enum ClientAction {
    * @var Tell the server that you quit
    */
       QUIT,
-  /**
-   * @var Tell the server your login data
-   */
-      LOGIN
 };
 /**
  * @brief Error codes that can be sent via an ErrorPackage
@@ -47,6 +43,10 @@ enum ErrorCode {
   /**
    * @var The sent file could not be stored
    */
-      FILE_STORAGE
+      FILE_STORAGE,
+  /**
+   * @var The client is blocked
+   */
+      CLIENT_BLOCKED
 };
 }
