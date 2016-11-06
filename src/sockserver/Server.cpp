@@ -160,15 +160,19 @@ void Server::listen_on_socket() {
                 /* splitting the filename to username and password */
                 splitter = false;
                 for (char p : logindata) {
-                  if (p == '/') { splitter = true; }
-                  if (splitter) {
-                    password += p;
-                  } else {
-                    username += p;
+                  if (p == '/') {
+                    splitter = true;
+                  }else {
+                    if (splitter) {
+                      password += p;
+                    } else {
+                      username += p;
+                    }
                   }
                 }
                 if (LDAP_login(username, password)) {
                   authorized = true;
+                  std::cout << "fuck yeah" << std::endl;
                   /* TODO send back correct input input */
                 } else {
                   ++login_tries;
@@ -270,7 +274,7 @@ void Server::store_file(int accepted_socket) {
     this->add_file_mutex(data_package->get_filename());
     {
       std::lock_guard<std::mutex> lock(*this->file_muts[data_package->get_filename()]);
-      /* try to open the file */
+      /* try to open t<< "-"he file */
       output_file.open(this->target_directory + data_package->get_filename(), std::ios::out | std::ios::binary);
       /* check if file could be opened */
       file_opened = output_file.is_open();
@@ -348,8 +352,6 @@ void Server::remove_file_mutex(std::string filename) {
 }
 
 bool Server::LDAP_login(std::string username, std::string password){
-  std::cout << username << std::endl;
-  std::cout << password << std::endl;
   LDAP *ld, *ld2;           /* ldap resources */
   LDAPMessage *result, *e;  /* LPAD results */
 
