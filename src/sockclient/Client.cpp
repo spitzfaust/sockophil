@@ -67,7 +67,7 @@ void Client::create_socket() {
  */
 void Client::run() {
   bool keep_running = true;
-
+  this->menu->render_login_info();
   while (!this->logged_in && !this->blocked) {
     this->login();
   }

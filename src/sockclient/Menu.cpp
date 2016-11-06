@@ -28,7 +28,7 @@ Menu::Menu(int port, std::string ip_address, std::string current_directory)
  * @brief Print a welcome message to the screen. Is only called once on start of the client.
  */
 void Menu::render_welcome_msg() const noexcept {
-  std::string welcome_msg = "sockclient v0.1";
+  std::string welcome_msg = "sockclient v2.0";
   rlutil::saveDefaultColor();
   std::cout << welcome_msg << std::endl;
   rlutil::setColor(rlutil::LIGHTGREEN);
@@ -285,10 +285,17 @@ void Menu::render_status_upload() const noexcept {
   std::cout << "Uploading..." << std::endl;
   rlutil::resetColor();
 }
-
+void Menu::render_login_info() const noexcept {
+  rlutil::setColor(rlutil::LIGHTGREEN);
+  std::cout << "Welcome to sockclient, please log yourself in with your" << std::endl;
+  std::cout << "FH Technikum Wien username and password!" << std::endl;
+  rlutil::resetColor();
+}
 void Menu::render_login_error(unsigned short tries, unsigned short max_tries) const noexcept {
   std::string
       error_msg = "Login failed. You have left " + std::to_string(max_tries - tries) + " until you are blocked.";
   this->render_error(error_msg);
 }
+
+
 }

@@ -35,7 +35,7 @@ int main(int argc, const char **argv) {
 
   int port = 0;
   std::string ip_address = "";
-  std::string version = "sockclient 0.1";
+  std::string version = "sockclient 2.0";
   /* client pointer that is used later */
   std::shared_ptr<sockclient::Client> client;
   /* set the title of the terminal window */
