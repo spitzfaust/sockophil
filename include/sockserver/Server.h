@@ -13,7 +13,7 @@
 
 namespace sockserver {
 /**
- * @class Server Server.h "sockclient/Server.h"
+ * @class Server Server.h "sockserver/Server.h"
  * @brief Class that is used to interact with the client
  */
 class Server : public sockophil::Networking {
@@ -50,9 +50,13 @@ class Server : public sockophil::Networking {
    * @var mut is the mutex that is used to sync the tasks
    */
   std::mutex mut;
-
+  /**
+   * @var file_muts is a map that holds a mutex for every file
+   */
   std::map<std::string, std::unique_ptr<std::mutex>> file_muts;
-
+  /**
+   * @var blocked_clients is a map that holds the ip addresses and a timestamp of blocked clients
+   */
   std::map<std::string, std::chrono::system_clock::time_point> blocked_clients;
 
   void create_socket();

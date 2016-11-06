@@ -6,10 +6,17 @@
 #include "sockophil/SuccessPackage.h"
 
 namespace sockophil {
-    std::string SuccessPackage::get_type() const noexcept {
-        return SUCCESS_PACKAGE;
-    }
-    template <class Archive>
-    void SuccessPackage::serialize(Archive &ar) {
-    }
+SuccessPackage::SuccessPackage(std::string filename) : filename(filename) {
+
+}
+std::string SuccessPackage::get_filename() const noexcept {
+  return this->filename;
+}
+std::string SuccessPackage::get_type() const noexcept {
+  return SUCCESS_PACKAGE;
+}
+template<class Archive>
+void SuccessPackage::serialize(Archive &ar) {
+  ar(this->filename);
+}
 }

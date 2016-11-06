@@ -43,9 +43,8 @@ namespace sockserver {
  * @param target_directory is the directory to upload files
  */
 Server::Server(unsigned short port, std::string target_directory) : port(port) {
-  this->pool = std::make_unique<ThreadPool>();
+  this->pool = std::make_unique<ThreadPool>(sockophil::MIN_NUMBER_THREADS);
   this->target_directory = sockophil::Helper::add_trailing_slash(target_directory);
-
   this->create_socket();
   this->bind_to_socket();
 }
@@ -94,7 +93,6 @@ void Server::listen_on_socket() {
     int accepted_socket = -1;
     std::cout << "Waiting for clients..." << std::endl;
     /* should a new client be accepted */
-
     accepted_socket = accept(this->socket_descriptor, (struct sockaddr *) &client_address,
                              &client_address_length);
     /* check if an error happened while accepting */
@@ -103,7 +101,7 @@ void Server::listen_on_socket() {
     } else {
       std::cout << "Client connected from " << inet_ntoa(client_address.sin_addr) << ": "
                 << ntohs(client_address.sin_port) << std::endl;
-      /* thread begins */
+      /* task gets thrown into thread pool */
       this->pool->schedule([this, accepted_socket, client_address](const std::atomic_bool &stop) {
         /* number of login login_tries */
         unsigned short login_tries = 0;
@@ -191,9 +189,19 @@ void Server::listen_on_socket() {
               }
             }
           } catch (const sockophil::SocketReceiveException &e) {
+            /* happens if a client exits suddenly */
             {
               std::lock_guard<std::mutex> lock(this->mut);
-              std::cout << "Catched a SocketReceiveException: " << e.what() << std::endl;
+              std::cout << "Caught a SocketReceiveException: " << e.what() << std::endl;
+            }
+            close(accepted_socket);
+            return;
+          } catch (const cereal::Exception &e) {
+            /* happens if cereal couldn't deserialise the Package */
+            /* should not let the server crash */
+            {
+              std::lock_guard<std::mutex> lock(this->mut);
+              std::cout << "Caught a Cereal Exception: " << e.what() << std::endl;
             }
             close(accepted_socket);
             return;
@@ -232,7 +240,9 @@ std::vector<std::string> Server::directory_list() const {
       struct stat fileinfo;
       direntry = readdir(dirptr);
       if (direntry) {
+        /* try to get the fileinfo of the entry */
         if(stat((this->target_directory + std::string(direntry->d_name)).c_str(), &fileinfo) != -1) {
+          /* add the name and the size to the vector */
           list.push_back(std::string(direntry->d_name) + " - " + std::to_string(fileinfo.st_size));
         }
       } else {
@@ -256,26 +266,26 @@ void Server::store_file(int accepted_socket) {
   bool file_opened = false;
   /* Package for the response */
   std::shared_ptr<sockophil::Package> response_package = nullptr;
-  std::shared_ptr<sockophil::FileInfoPackage> data_package = nullptr;
+  std::shared_ptr<sockophil::FileInfoPackage> info_package = nullptr;
   /* try to receive a FileInfoPackage */
   auto received_pkg = this->receive_package(accepted_socket);
   /* should be a FileInfoPackage */
   if (received_pkg->get_type() == sockophil::FILE_INFO_PACKAGE) {
     /* cast to a FileInfoPackage */
-    data_package = std::static_pointer_cast<sockophil::FileInfoPackage>(received_pkg);
+    info_package = std::static_pointer_cast<sockophil::FileInfoPackage>(received_pkg);
     /* file to write to */
     std::ofstream output_file;
-    this->add_file_mutex(data_package->get_filename());
+    this->add_file_mutex(info_package->get_filename());
     {
-      std::lock_guard<std::mutex> lock(*this->file_muts[data_package->get_filename()]);
+      std::lock_guard<std::mutex> lock(*this->file_muts[info_package->get_filename()]);
       /* try to open t<< "-"he file */
-      output_file.open(this->target_directory + data_package->get_filename(), std::ios::out | std::ios::binary);
+      output_file.open(this->target_directory + info_package->get_filename(), std::ios::out | std::ios::binary);
       /* check if file could be opened */
       file_opened = output_file.is_open();
       if (file_opened) {
         /* write to the file and create SuccessPackage */
         this->socket_store_file(accepted_socket, output_file);
-        response_package = std::make_shared<sockophil::SuccessPackage>();
+        response_package = std::make_shared<sockophil::SuccessPackage>(info_package->get_filename());
       } else {
         /* file could not be stored */
         response_package = std::make_shared<sockophil::ErrorPackage>(sockophil::FILE_STORAGE);
@@ -289,7 +299,7 @@ void Server::store_file(int accepted_socket) {
   /* send the response to the client */
   this->send_package(accepted_socket, response_package);
   if (!file_opened) {
-    this->remove_file_mutex(data_package->get_filename());
+    this->remove_file_mutex(info_package->get_filename());
   }
 }
 
@@ -344,7 +354,12 @@ void Server::remove_file_mutex(std::string filename) {
     this->file_muts.erase(filename);
   }
 }
-
+/**
+ * @brief Tries to log the client in to the FH LDAP server
+ * @param username is the name of the user
+ * @param password is the password of the user
+ * @return true if login was successful and no error occurred else false
+ */
 bool Server::ldap_login(std::string username, std::string password) {
   LDAP *ld, *ld2;           /* ldap resources */
   LDAPMessage *result, *e;  /* LPAD results */
@@ -400,23 +415,34 @@ bool Server::ldap_login(std::string username, std::string password) {
   return true;
 }
 
+/**
+ * @brief Check if a client is currently blocked. Delete block if block time is up.
+ * @param ip is the ip address of the client
+ * @return true if the client is blocked else false
+ */
 bool Server::is_client_blocked(std::string ip) {
-  auto now = std::chrono::system_clock::now();
+  /* is used to store the timestamp when the client was blocked */
   std::chrono::system_clock::time_point blocked_at;
   {
     std::lock_guard<std::mutex> lock(this->mut);
+    /* check if client exists in the blocked_clients map */
     if (this->blocked_clients.count(ip) > 0) {
+      /* get the timestamp */
       blocked_at = this->blocked_clients[ip];
     } else {
+      /* client is not in the map */
       return false;
     }
   }
-  if (std::chrono::duration_cast<std::chrono::seconds>(now - blocked_at)
+  /* check if the client was blocked for less than BLOCKING_MINUTES */
+  if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - blocked_at)
       < std::chrono::duration_cast<std::chrono::seconds>(this->BLOCKING_MINUTES)) {
     return true;
   } else {
+    /* client is not blocked anymore */
     {
       std::lock_guard<std::mutex> lock(this->mut);
+      /* remove client ip from map */
       this->blocked_clients.erase(ip);
     }
     return false;
