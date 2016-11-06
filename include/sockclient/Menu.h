@@ -67,6 +67,8 @@ class Menu {
 
   void render_error(sockophil::ErrorCode error_code) const noexcept;
 
+  void render_login_info() const noexcept;
+
   void render_login_error(unsigned short tries, unsigned short max_tries) const noexcept;
 
   void render_status_upload() const noexcept;
