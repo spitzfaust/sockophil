@@ -193,7 +193,7 @@ void Server::listen_on_socket() {
           } catch (const sockophil::SocketReceiveException &e) {
             {
               std::lock_guard<std::mutex> lock(this->mut);
-              std::cout << "Catched a SocketReceiveException: " << e.what() << std::endl;
+              std::cout << "Caught a SocketReceiveException: " << e.what() << std::endl;
             }
             close(accepted_socket);
             return;
