@@ -18,19 +18,22 @@ static const char USAGE[] =
 
     Usage:
       sockserver
-      sockserver [-p <port> | --port=<port>] [-d <dir> | --dir=<dir>]
+      sockserver (-a | --auth)
+      sockserver [-p <port> | --port=<port>] [-d <dir> | --dir=<dir>] [-a | --auth]
       sockserver (-h | --help)
       sockserver (--version)
 
     Options:
       -p <port>, --port=<port>  Port the server listens on [default: 1337].
       -d <dir>, --dir=<dir>     Relative path for Uploads [default: ./upload].
+      -a, --auth                Enable LDAP authentication.
       -h, --help                Show this screen.
       --version                 Show version.
 )";
 
 int main(int argc, const char **argv) {
   int port = 0;
+  bool auth = false;
   std::string dir = "";
   std::string version = "sockserver 2.0";
   /* client pointer that is used later */
@@ -63,9 +66,10 @@ int main(int argc, const char **argv) {
     return -1;
   }
   dir = args["--dir"].asString();
+  auth = args["--auth"].asBool();
 
   /* create a new Server object */
-  server = std::make_shared<sockserver::Server>(port, dir);
+  server = std::make_shared<sockserver::Server>(port, dir, auth);
   server->run();
 
   return 0;

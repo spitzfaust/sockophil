@@ -27,6 +27,10 @@ class Server : public sockophil::Networking {
    */
   const std::chrono::minutes BLOCKING_MINUTES = std::chrono::minutes(3);
   /**
+   * @var auth if true ldap auth is checked
+   */
+   bool auth;
+  /**
    * @var port the server listens on
    */
   unsigned short port;
@@ -75,11 +79,11 @@ class Server : public sockophil::Networking {
 
   void remove_file_mutex(std::string filename);
 
- public:
-
   bool ldap_login(std::string username, std::string password);
 
-  Server(unsigned short port, std::string target_dir);
+ public:
+
+  Server(unsigned short port, std::string target_dir, bool auth);
 
   ~Server();
 

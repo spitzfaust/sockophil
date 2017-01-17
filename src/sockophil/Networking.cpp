@@ -148,6 +148,7 @@ void Networking::socket_store_file(const int &socket_descriptor, std::ofstream &
   long total_received = 0;
 
   /* run until remaining is 0 */
+
   while (total_received != filesize) {
     /* number of bytes that was received */
     ssize_t size = 0;
